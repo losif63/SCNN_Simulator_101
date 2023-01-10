@@ -30,11 +30,11 @@ int main (int argc, char** argv){
 
     // SCNN arch config
 
-    // pe & mult_array
+    // pe & mult_array -> Multiplier Array
     unsigned    mult_arr_M = 4;
     unsigned    mult_arr_W = 4;
         
-    // x-bar
+    // x-bar -> crossbar
     unsigned    xbar_in = mult_arr_M * mult_arr_W; 
     unsigned    xbar_scale_out_ratio  = 1;
     unsigned    xbar_out  = xbar_in*(xbar_scale_out_ratio);
