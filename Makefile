@@ -10,16 +10,16 @@ SRC_DIR := ./src
 OBJ_DIR := ./obj
 SANITY_DIR := ./sanity
 
-#CFLAGS := -W -Wall -O3 -std=c++11 
-#CFLAGS := -W -Wall -O3 -std=c++11 -DNDEBUG
+#CXXFLAGS := -W -Wall -O3 -std=c++11 
+#CXXFLAGS := -W -Wall -O3 -std=c++11 -DNDEBUG
 
-#CFLAGS := -W -Wall -g -std=c++11 -D_DEBUG_
-CFLAGS := -W -Wall -g -std=c++11
-#CFLAGS := -W -Wall -O3 -std=c++11 -D_DEBUG_
+#CXXFLAGS := -W -Wall -g -std=c++11 -D_DEBUG_
+CXXFLAGS := -W -Wall -g -std=c++11
+#CXXFLAGS := -W -Wall -O3 -std=c++11 -D_DEBUG_
 
-#CFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_  
-#CFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_ -D_GOLD_ 
-#CFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_ -D_DENSE_
+#CXXFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_  
+#CXXFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_ -D_GOLD_ 
+#CXXFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_ -D_DENSE_
 LDFLAGS :=
 
 #LIBS := -lprotobuf
