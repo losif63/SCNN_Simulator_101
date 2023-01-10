@@ -30,6 +30,10 @@ int main (int argc, char** argv){
 
     // SCNN arch config
 
+    // pe array
+    unsigned    pe_arr_W = 1;
+    unsigned    pe_arr_H = 1;
+
     // pe & mult_array -> Multiplier Array
     unsigned    mult_arr_M = 4;
     unsigned    mult_arr_W = 4;
@@ -111,7 +115,11 @@ int main (int argc, char** argv){
     cout << "+++++++ PREPROCESSING STEP END : DNN TOPOLOGY ANALYSIS +++++++" << endl;
     // make SCNN configuration
     Scnn::ArchConfig arch_config(
-        // pe            
+        // pe
+        pe_arr_W,
+        pe_arr_H,
+
+        // mult array            
         mult_arr_M, 
         mult_arr_W, 
 

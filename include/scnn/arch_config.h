@@ -10,6 +10,8 @@ class ArchConfig{
 
 public:
     ArchConfig(
+        unsigned    _pe_arr_W,
+        unsigned    _pe_arr_H,
         unsigned    _mult_arr_M,
         unsigned    _mult_arr_W,
  
@@ -35,6 +37,8 @@ public:
     ~ArchConfig();
 
     //get
+    unsigned get_pe_arr_W();
+    unsigned get_pe_arr_H();
     unsigned get_mult_arr_M();
     unsigned get_mult_arr_W();
 
@@ -55,6 +59,10 @@ public:
     unsigned get_min_OA_W_per_PE();
 
 private:
+    // PE array
+    unsigned    _pe_arr_W;
+    unsigned    _pe_arr_H;
+
     // multiplier array
     unsigned    _mult_arr_M;
     unsigned    _mult_arr_W;
