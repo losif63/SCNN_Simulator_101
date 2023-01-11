@@ -56,9 +56,14 @@ void VirtualChannel<T>::init(unsigned num_phy_ch_q,
     _phy_ch_q = queueList;
 }
 
+/* My guess: If there are no elements in the channel, it is idle */
 template <class T>
 bool VirtualChannel<T>::idle() {
-    /* TODO: Find out how to determine idle & implement function */
+    assert((_num_phy_ch_q > 0) && (_num_q_entries_per_phy_ch) > 0);
+    for(int i = 0; i < this->_num_phy_ch_q; i++) {
+        // If any one of the channels has element, it is not idle
+        if(canDrain(i)) return false;
+    }
     return true;
 }
 
@@ -78,16 +83,19 @@ bool VirtualChannel<T>::canDrain(unsigned phy_id) {
 
 template <class T>
 void VirtualChannel<T>::receive(T elem, unsigned phy_id) {
+    assert(this->canReceive(phy_id));
     ((deque<T>)&_phy_ch_q[phy_id])->push_front(elem);
 }
 
 template <class T>
 T VirtualChannel<T>::drain(unsigned phy_id) {
+    assert(this->canDrain(phy_id));
     return ((deque<T>)&_phy_ch_q[phy_id])->pop_back();
 }
 
 template <class T>
 T VirtualChannel<T>::next_elem_to_be_drained(unsigned phy_id) {
+    assert(canDrain(phy_id));
     return ((deque<T>)&_phy_ch_q[phy_id])->back();
 }
 
