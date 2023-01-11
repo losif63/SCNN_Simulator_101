@@ -154,4 +154,6 @@ unsigned ArchConfig::get_min_OA_W_per_PE() {
     return this->_min_OA_W_per_PE;
 }
 
+/**********************************************************************/
+
 }

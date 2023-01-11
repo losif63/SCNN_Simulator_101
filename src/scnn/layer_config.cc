@@ -167,4 +167,5 @@ unsigned LayerConfig::set_W_per_PE(unsigned W_per_PE) {
     return this->_W_per_PE;
 }
 
+/**********************************************************************/
 }
