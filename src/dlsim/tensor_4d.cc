@@ -13,8 +13,11 @@ namespace dlsim {
 template <class T>
 Tensor4d<T>::Tensor4d() {
     this->_ndim = 4;
-    this->_dim_key = ['N', 'C', 'H', 'W'];
-    this->_dim_sz.insert({'N', 0}, {'C', 0}, {'H', 0}, {'W', 0});
+    this->_dim_key = "NCHW";
+    this->_dim_sz.insert({'N', 0});
+    this->_dim_sz.insert({'C', 0});
+    this->_dim_sz.insert({'H', 0});
+    this->_dim_sz.insert({'W', 0});
 }
 
 template <class T>
@@ -28,8 +31,11 @@ Tensor4d<T>::Tensor4d(
     int         sparsity
 ) {
     this->_ndim = ndim;
-    this->_dim_key = ['N', 'C', 'H', 'W'];
-    this->_dim_sz.insert({'N', N}, {'C', C}, {'H', H}, {'W', W});
+    this->_dim_key = "NCHW";
+    this->_dim_sz.insert({'N', N});
+    this->_dim_sz.insert({'C', C});
+    this->_dim_sz.insert({'H', H});
+    this->_dim_sz.insert({'W', W});
 }
 
 /**********************************************************************/
@@ -83,7 +89,7 @@ void Tensor4d<T>::set_data(
     this->_dim_sz['C'] = C;
     this->_dim_sz['H'] = H;
     this->_dim_sz['W'] = W;
-    this->data = &&&&T;
+    // this->data = &&&&T;
 }
 
 

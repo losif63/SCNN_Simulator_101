@@ -64,7 +64,7 @@ public:
     OA_element();
     OA_element(
         bool valid,
-        Weight_t data,
+        Fmap_t data,
         tensor_4D_idx idx,
         unsigned bank_id,
         unsigned idx_in_bank
