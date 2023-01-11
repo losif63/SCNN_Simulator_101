@@ -12,8 +12,6 @@
 namespace Scnn 
 {
 
-/* TODO: Repeat for IA_element & OA_element */
-
 /**********************************************************************/
 // Constructors
 W_element::W_element(
