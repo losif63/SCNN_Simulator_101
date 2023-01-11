@@ -6,6 +6,9 @@
 
 #include "scnn/data_element.h"
 
+#ifndef SCNN_DATA_ELEMENT_CC_
+#define SCNN_DATA_ELEMENT_CC_
+
 namespace Scnn 
 {
 
@@ -204,3 +207,5 @@ void OA_element::write_idx_in_bank(unsigned new_idx) {
 }
 
 }
+
+#endif

@@ -1,5 +1,8 @@
 #include "scnn/pe.h"
 
+#ifndef SCNN_PE_CC_
+#define SCNN_PE_CC_
+
 namespace Scnn
 {
 
@@ -72,3 +75,5 @@ PE::idle(){
 }
 
 } // namespace Scnn
+
+#endif

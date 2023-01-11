@@ -6,6 +6,9 @@
 
 #include "scnn/layer_config.h"
 
+#ifndef SCNN_LAYER_CONFIG_CC_
+#define SCNN_LAYER_CONFIG_CC_
+
 namespace Scnn {
 
 /**********************************************************************/
@@ -169,3 +172,5 @@ unsigned LayerConfig::set_W_per_PE(unsigned W_per_PE) {
 
 /**********************************************************************/
 }
+
+#endif

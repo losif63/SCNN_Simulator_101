@@ -6,6 +6,9 @@
 
 #include "scnn/arch_config.h"
 
+#ifndef SCNN_ARCH_CONFIG_CC_
+#define SCNN_ARCH_CONFIG_CC_
+
 namespace Scnn
 {
 
@@ -157,3 +160,5 @@ unsigned ArchConfig::get_min_OA_W_per_PE() {
 /**********************************************************************/
 
 }
+
+#endif

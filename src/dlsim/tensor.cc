@@ -6,6 +6,9 @@
 
 #include "dlsim/tensor.h"
 
+#ifndef DLSIM_TENSOR_CC_
+#define DLSIM_TENSOR_CC_
+
 namespace dlsim 
 {
 
@@ -31,3 +34,5 @@ Tensor::~Tensor() {}
 
 /**********************************************************************/
 }
+
+#endif

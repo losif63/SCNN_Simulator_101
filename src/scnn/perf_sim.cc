@@ -1,5 +1,8 @@
 #include "scnn/perf_sim.h"
 
+#ifndef SCNN_PERF_SIM_CC_
+#define SCNN_PERF_SIM_CC_
+
 namespace Scnn{
 
 using namespace std;
@@ -115,3 +118,4 @@ PerfSim::cycle(){
 
 }
 
+#endif

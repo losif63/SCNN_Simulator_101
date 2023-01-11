@@ -6,6 +6,9 @@
 
 #include "dlsim/tensor_4d.h"
 
+#ifndef DLSIM_TENSOR_4D_CC_
+#define DLSIM_TENSOR_4D_CC_
+
 namespace dlsim {
 
 /**********************************************************************/
@@ -94,3 +97,5 @@ void Tensor4d<T>::set_data(
 
 
 }
+
+#endif
