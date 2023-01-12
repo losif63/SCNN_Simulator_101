@@ -30,6 +30,8 @@ LDFLAGS :=
 # all sources
 SRC				= $(wildcard $(SRC_DIR)/*.$(CPP_SUFFIX))
 SRC				+= $(wildcard $(SRC_DIR)/**/*.$(CPP_SUFFIX))
+
+SRC2			= $(wildcard $(SRC_DIR)/**/*.$(CPP_SUFFIX))
 #SRC_PROTO	= $(wildcard $(SRC_DIR)/**/*.$(CPP_PROTO_SUFFIX))
 $(info $(SRC))
 
@@ -37,9 +39,12 @@ $(info $(SRC_DIR)/%.$(CPP_SUFFIX))
 $(info $(OBJ_DIR)/%.o)
 # objects
 OBJ				= $(patsubst $(SRC_DIR)/%.$(CPP_SUFFIX), $(OBJ_DIR)/%.o, $(SRC))
+OBJ2			= $(patsubst $(SRC_DIR)/%.$(CPP_SUFFIX), $(OBJ_DIR)/%.o, $(SRC2))
 #OBJ_PROTO	= $(patsubst $(SRC_DIR)/%.$(CPP_PROTO_SUFFIX), $(OBJ_DIR)/%.o, $(SRC_PROTO))
 ## patsubst = pattern substitute
 $(info $(OBJ))
+
+$(info $(OBJ2))
 
 TEST			= $(wildcard $(TEST_DIR)/*.$(CPP_SUFFIX))
 TEST			+= $(wildcard $(TEST_DIR)/**/*.$(CPP_SUFFIX))
@@ -47,7 +52,6 @@ TEST			+= $(wildcard $(TEST_DIR)/**/*.$(CPP_SUFFIX))
 $(info $(TEST))
 
 $(info $(TEST_DIR)/%.$(CPP_SUFFIX))
-$(info $())
 
 TESTOBJ			= $(patsubst $(TEST_DIR)/%.$(CPP_SUFFIX), $(TESTOBJ_DIR)/%.o, $(TEST))
 $(info $(TESTOBJ))
@@ -66,8 +70,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(CPP_SUFFIX)
 #$(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(CPP_PROTO_SUFFIX)
 #	$(CC) $(INCLUDE_DIR) $(CFLAGS) -c $< -o $@
 
-test: $(TESTOBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(TESTOBJ) -o $(TEST_EXE)
+test: $(TESTOBJ) $(OBJ2)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(TESTOBJ) $(OBJ2) -o $(TEST_EXE)
 
 
 $(TESTOBJ_DIR)/%.o: $(TEST_DIR)/%.$(CPP_SUFFIX)
