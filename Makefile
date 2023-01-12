@@ -1,4 +1,5 @@
 TOP_EXE := scnn
+TEST_EXE := TEST
 
 CC := g++
 
@@ -8,18 +9,20 @@ CPP_PROTO_SUFFIX		:= pb.cc
 INCLUDE_DIR := -I./include 
 SRC_DIR := ./src
 OBJ_DIR := ./obj
+TEST_DIR := ./test
+TESTOBJ_DIR = ./testobj
 SANITY_DIR := ./sanity
 
-#CXXFLAGS := -W -Wall -O3 -std=c++11 
-#CXXFLAGS := -W -Wall -O3 -std=c++11 -DNDEBUG
+#CFLAGS := -W -Wall -O3 -std=c++11 
+#CFLAGS := -W -Wall -O3 -std=c++11 -DNDEBUG
 
-#CXXFLAGS := -W -Wall -g -std=c++11 -D_DEBUG_
-CXXFLAGS := -W -Wall -g -std=c++11
-#CXXFLAGS := -W -Wall -O3 -std=c++11 -D_DEBUG_
+#CFLAGS := -W -Wall -g -std=c++11 -D_DEBUG_
+CFLAGS := -W -Wall -g -std=c++11
+#CFLAGS := -W -Wall -O3 -std=c++11 -D_DEBUG_
 
-#CXXFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_  
-#CXXFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_ -D_GOLD_ 
-#CXXFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_ -D_DENSE_
+#CFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_  
+#CFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_ -D_GOLD_ 
+#CFLAGS := -W -Wall --debug -std=c++11 -D_DEBUG_ -D_DENSE_
 LDFLAGS :=
 
 #LIBS := -lprotobuf
@@ -38,6 +41,17 @@ OBJ				= $(patsubst $(SRC_DIR)/%.$(CPP_SUFFIX), $(OBJ_DIR)/%.o, $(SRC))
 ## patsubst = pattern substitute
 $(info $(OBJ))
 
+TEST			= $(wildcard $(TEST_DIR)/*.$(CPP_SUFFIX))
+TEST			+= $(wildcard $(TEST_DIR)/**/*.$(CPP_SUFFIX))
+
+$(info $(TEST))
+
+$(info $(TEST_DIR)/%.$(CPP_SUFFIX))
+$(info $())
+
+TESTOBJ			= $(patsubst $(TEST_DIR)/%.$(CPP_SUFFIX), $(TESTOBJ_DIR)/%.o, $(TEST))
+$(info $(TESTOBJ))
+
 # top program
 all: $(OBJ) $(OBJ_PROTO)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -o $(TOP_EXE)
@@ -52,6 +66,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(CPP_SUFFIX)
 #$(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(CPP_PROTO_SUFFIX)
 #	$(CC) $(INCLUDE_DIR) $(CFLAGS) -c $< -o $@
 
+test: $(TESTOBJ)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(TESTOBJ) -o $(TEST_EXE)
+
+
+$(TESTOBJ_DIR)/%.o: $(TEST_DIR)/%.$(CPP_SUFFIX)
+	$(CC) $(INCLUDE_DIR) $(CFLAGS) -c $< -o $@
+
 
 
 clean:
@@ -62,4 +83,8 @@ clean:
 #	rm -rf $(OBJ_DIR)/meijoo/*.o
 #	rm -rf $(OBJ_DIR)/protobuf/*.o
 #	rm -rf $(SANITY_DIR)/*
+	rm -rf $(TESTOBJ_DIR)/*.o
+	rm -rf $(TESTOBJ_DIR)/dlsim/*.o
+	rm -rf $(TESTOBJ_DIR)/scnn/*.o
 	rm $(TOP_EXE)
+	rm $(TEST_EXE)
