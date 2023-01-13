@@ -16,11 +16,11 @@ public:
     Tensor4d();
     Tensor4d(
         unsigned    ndim,
-        unsigned    N,
-        unsigned    C,
-        unsigned    H,
-        unsigned    W,
-        char*       type,
+        unsigned    dim1,
+        unsigned    dim2,
+        unsigned    dim3,
+        unsigned    dim4,
+        TensorType  type,
         int         sparsity
     );
     virtual ~Tensor4d();
@@ -29,20 +29,21 @@ public:
     virtual unsigned				size();
     virtual void					print();
 
-    T**** data() const;
+    T* data() const;
 
     void set_data(
-        unsigned    N,
-        unsigned    C,
-        unsigned    H,
-        unsigned    W,
+        unsigned    dim1,
+        unsigned    dim2,
+        unsigned    dim3,
+        unsigned    dim4,
         T           init_value
-        );
+    );
 
 private:
     
 protected:
-    T**** _data;
+    // We will use 1D array as 4D array
+    T* _data;
 
 };
 

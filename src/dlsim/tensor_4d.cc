@@ -15,30 +15,47 @@ namespace dlsim {
 // Constructors
 template <class T>
 Tensor4d<T>::Tensor4d() {
-    this->_ndim = 4;
-    this->_dim_key = "NCHW";
-    this->_dim_sz.insert({'N', 0});
-    this->_dim_sz.insert({'C', 0});
-    this->_dim_sz.insert({'H', 0});
-    this->_dim_sz.insert({'W', 0});
+    this->_ndim = 0;
+    this->_dim_key = NULL;
+    this->data = NULL;
 }
 
 template <class T>
 Tensor4d<T>::Tensor4d(
     unsigned    ndim,
-    unsigned    N,
-    unsigned    C,
-    unsigned    H,
-    unsigned    W,
-    char*       type,
+    unsigned    dim1,
+    unsigned    dim2,
+    unsigned    dim3,
+    unsigned    dim4,
+    TensorType  type,
     int         sparsity
 ) {
-    this->_ndim = ndim;
-    this->_dim_key = "NCHW";
-    this->_dim_sz.insert({'N', N});
-    this->_dim_sz.insert({'C', C});
-    this->_dim_sz.insert({'H', H});
-    this->_dim_sz.insert({'W', W});
+    this->_ndim = ndim; // This should be 4 no matter what
+    this->_data = T[dim1 * dim2 * dim3 * dim4];
+    switch(type) {
+        case _IA:
+            this->_dim_key = ['N', 'C', 'H', 'W'];
+            this->_dim_sz.insert({'N', dim1});
+            this->_dim_sz.insert({'C', dim2});
+            this->_dim_sz.insert({'H', dim3});
+            this->_dim_sz.insert({'W', dim4});
+            break;
+        case _W:
+            this->_dim_key = ['K', 'C', 'S', 'R'];
+            this->_dim_sz.insert({'K', dim1});
+            this->_dim_sz.insert({'C', dim2});
+            this->_dim_sz.insert({'S', dim3});
+            this->_dim_sz.insert({'R', dim4});
+            break;
+        case _OA:
+            this->_dim_key = ['N', 'K', 'H', 'W'];
+            this->_dim_sz.insert({'N', dim1});
+            this->_dim_sz.insert({'K', dim2});
+            this->_dim_sz.insert({'H', dim3});
+            this->_dim_sz.insert({'W', dim4});
+            break;
+    }
+    
 }
 
 /**********************************************************************/
@@ -58,8 +75,8 @@ unsigned Tensor4d<T>::dim_sz(char key) {
 /* Returns the entire size of this tensor */
 template <class T>
 unsigned Tensor4d<T>::size() {
-    return this->dim_sz['N'] * this->dim_sz['C'] * this->dim_sz['H'] 
-    * this->dim_sz['W'];
+    return this->dim_sz[_dim_key[0]] * this->dim_sz[_dim_key[0]] * 
+    this->dim_sz[_dim_key[2]] * this->dim_sz[_dim_key[3]];
 }
 
 /* Prints out the specifications of this tensor */
@@ -75,24 +92,26 @@ void Tensor4d<T>::print() {
 
 /* Returns the entire data of tensor */
 template <class T>
-T**** Tensor4d<T>::data() const {
+T* Tensor4d<T>::data() const {
     return this->_data;
 };
 
-/* Initializes data of tensor */
+/* Initializes data of tensor at given index */
 template <class T>
 void Tensor4d<T>::set_data(
-    unsigned    N,
-    unsigned    C,
-    unsigned    H,
-    unsigned    W,
+    unsigned    dim1,
+    unsigned    dim2,
+    unsigned    dim3,
+    unsigned    dim4,
     T           init_value
 ) {
-    this->_dim_sz['N'] = N;
-    this->_dim_sz['C'] = C;
-    this->_dim_sz['H'] = H;
-    this->_dim_sz['W'] = W;
-    // this->data = &&&&T;
+    unsigned stride[4];
+    stride[0] = dim2 * dim3 * dim4;
+    stride[1] = dim3 * dim4;
+    stride[2] = dim4;
+    stride[3] = 1;
+    TENSOR_4D_INDEX_AT(_data, stride, dim1, dim2, dim3, dim4) 
+        = init_value;
 }
 
 

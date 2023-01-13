@@ -19,6 +19,19 @@
 //#define DEBUG
 //#define give_sparsity
 
+/*
+* Let the dimensions be A * B * C * D
+* stride[0] = sizeof(float) * B * C * D
+* stride[1] = sizeof(float) * C * D
+* stride[2] = sizeof(float) * D
+* stride[3] = sizeof(float)
+*/
+#define TENSOR_4D_INDEX_AT(ptr, stride, i, j, k, l) ptr[i*stride[0]+j*stride[1]+k*stride[2]+l*stride[3]]
+enum TensorType {
+    _IA, _W, _OA
+};
+
+
 // type of variables
 #ifdef _GOLD_
 #define Weight_t		signed long

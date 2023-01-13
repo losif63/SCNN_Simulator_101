@@ -24,17 +24,24 @@ public:
 	void load_next_layer();
 	void clear_current_layer();
 	void update_curr_layer_id(unsigned layer_id);
+	void initialize();
 
 	// get
 	ConvLayer* current_layer();
 	unsigned curr_layer_id();
+	string get_name();
 	
 private:
+	/* The map designates the values of the parameters of the layer
+	   Deque of maps means multiple such layers
+	*/
 	deque<map<string,unsigned int>*> *_cfg_network;
 
 	// layer-wide info (for currently active layer)
+	// Apparently, each layer keeps an id
    	unsigned int            _curr_layer_id;
    	ConvLayer*              _curr_layer;
+	string					dnn_name;
 
 };
 
