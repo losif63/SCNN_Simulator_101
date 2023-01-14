@@ -25,6 +25,7 @@ public:
     );
     virtual ~Tensor4d();
 
+    virtual void                    init();
     virtual unsigned				dim_sz(char key);
     virtual unsigned				size();
     virtual void					print();
@@ -44,6 +45,7 @@ private:
 protected:
     // We will use 1D array as 4D array
     T* _data;
+    int _sparsity;
 
 };
 

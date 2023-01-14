@@ -15,9 +15,42 @@ namespace dlsim
 ConvLayer::ConvLayer(const map<string,unsigned int>* cfg_curr_layer)
 {
     // TODO:: Implement
+    this->_IFmap = new Tensor4d<Fmap_t>(
+        4, 
+        cfg_curr_layer->at("N"), 
+        cfg_curr_layer->at("C"), 
+        cfg_curr_layer->at("H"), 
+        cfg_curr_layer->at("W"),
+        _IA_Tensor,
+        cfg_curr_layer->at("IA_sparsity")
+    );
+    
+    this->_W = new Tensor4d<Fmap_t>(
+        4, 
+        cfg_curr_layer->at("K"), 
+        cfg_curr_layer->at("C"), 
+        cfg_curr_layer->at("S"), 
+        cfg_curr_layer->at("R"),
+        _W_Tensor,
+        cfg_curr_layer->at("W_sparsity")
+    );
+
+    this->_OFmap = new Tensor4d<Fmap_t>(
+        4, 
+        cfg_curr_layer->at("N"), 
+        cfg_curr_layer->at("K"), 
+        cfg_curr_layer->at("H"), 
+        cfg_curr_layer->at("W"),
+        _OA_Tensor,
+        0
+    );
 }
 
-ConvLayer::~ConvLayer() {}
+ConvLayer::~ConvLayer() {
+    delete _IFmap;
+    delete _W;
+    delete _OFmap;
+}
 
 Tensor* ConvLayer::IFmap() {
     return this->_IFmap;

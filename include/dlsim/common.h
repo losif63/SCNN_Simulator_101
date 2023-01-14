@@ -28,7 +28,7 @@
 */
 #define TENSOR_4D_INDEX_AT(ptr, stride, i, j, k, l) ptr[i*stride[0]+j*stride[1]+k*stride[2]+l*stride[3]]
 enum TensorType {
-    _IA, _W, _OA
+    _IA_Tensor, _W_Tensor, _OA_Tensor
 };
 
 

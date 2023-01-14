@@ -24,6 +24,7 @@ public:
     ~MultArray();
     
     // fill
+    // In the init stage, one should fill the WFIFO and IARAM
     void init(
         Scnn::LayerConfig& layer_cfg,
         dlsim::Tensor* IA_slice,
@@ -36,6 +37,7 @@ public:
 
     void                      check_IA_slice_sanity(dlsim::Fmap4d_t* IA_full, unsigned N_id, unsigned C_id);
 
+    // Xbar contains channels of OA_element
 	void                      cycle(Scnn::Xbar* xbar);
     bool                      idle();
 
@@ -47,7 +49,8 @@ public:
 
     tuple<unsigned,unsigned>  OA_idx_to_bank_addr(tensor_4D_idx oa_idx);
 
-    // control    
+    // control
+    // advance --> bring in next vectors
     void                      advance_WFIFO();
     void                      advance_IARAM();
     void                      advance_to_next_mul_op();

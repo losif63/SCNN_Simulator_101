@@ -18,6 +18,7 @@ Tensor4d<T>::Tensor4d() {
     this->_ndim = 0;
     this->_dim_key = NULL;
     this->data = NULL;
+    this->_sparsity = 0;
 }
 
 template <class T>
@@ -32,6 +33,7 @@ Tensor4d<T>::Tensor4d(
 ) {
     this->_ndim = ndim; // This should be 4 no matter what
     this->_data = T[dim1 * dim2 * dim3 * dim4];
+    this->_sparsity = sparsity;
     switch(type) {
         case _IA:
             this->_dim_key = ['N', 'C', 'H', 'W'];
@@ -39,6 +41,7 @@ Tensor4d<T>::Tensor4d(
             this->_dim_sz.insert({'C', dim2});
             this->_dim_sz.insert({'H', dim3});
             this->_dim_sz.insert({'W', dim4});
+            this->init();
             break;
         case _W:
             this->_dim_key = ['K', 'C', 'S', 'R'];
@@ -46,6 +49,7 @@ Tensor4d<T>::Tensor4d(
             this->_dim_sz.insert({'C', dim2});
             this->_dim_sz.insert({'S', dim3});
             this->_dim_sz.insert({'R', dim4});
+            this->init();
             break;
         case _OA:
             this->_dim_key = ['N', 'K', 'H', 'W'];
@@ -55,7 +59,6 @@ Tensor4d<T>::Tensor4d(
             this->_dim_sz.insert({'W', dim4});
             break;
     }
-    
 }
 
 /**********************************************************************/
