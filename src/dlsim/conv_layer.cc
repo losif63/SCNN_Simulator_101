@@ -8,6 +8,7 @@
 #define DLSIM_CONV_LAYER_CC_
 
 #include "dlsim/conv_layer.h"
+#include "dlsim/tensor_4d.h"
 
 namespace dlsim
 {

@@ -8,6 +8,7 @@
 #define DLSIM_LOADER_CC_
 
 #include "dlsim/loader.h"
+#include "dlsim/tensor_4d.h"
 
 namespace dlsim
 {

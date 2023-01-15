@@ -17,7 +17,7 @@ template <class T>
 Tensor4d<T>::Tensor4d() {
     this->_ndim = 0;
     this->_dim_key = NULL;
-    this->data = NULL;
+    this->_data = NULL;
     this->_sparsity = 0;
 }
 
@@ -38,16 +38,18 @@ Tensor4d<T>::Tensor4d(
     this->_data = new T[dim1 * dim2 * dim3 * dim4];
     this->_sparsity = sparsity;
     switch(type) {
-        case _IA_Tensor:
-            this->_dim_key = {'N', 'C', 'H', 'W'};
+        case _IA_Tensor: {
+            this->_dim_key = "NCHW";
             this->_dim_sz.insert({'N', dim1});
             this->_dim_sz.insert({'C', dim2});
             this->_dim_sz.insert({'H', dim3});
             this->_dim_sz.insert({'W', dim4});
             // this->init();
             break;
-        case _W_Tensor:
-            this->_dim_key = {'K', 'C', 'S', 'R'};
+        }
+            
+        case _W_Tensor: {
+            this->_dim_key = "KCSR";
             this->_dim_sz.insert({'K', dim1});
             this->_dim_sz.insert({'C', dim2});
             this->_dim_sz.insert({'S', dim3});
@@ -59,7 +61,7 @@ Tensor4d<T>::Tensor4d(
             uniform_real_distribution<float> probGenerator(0.0, 1.0);
             uniform_real_distribution<float> valueGenerator(-5.0, 5.0);
             unsigned size = dim1 * dim2 * dim3 * dim4;
-            for(int i = 0; i < size; i++) {
+            for(unsigned i = 0; i < size; i++) {
                 randProbability = probGenerator(gen);
                 randValue = valueGenerator(gen);
                 if(randProbability > sparsity) _data[i] = 0.0;
@@ -67,13 +69,15 @@ Tensor4d<T>::Tensor4d(
             }
             // this->init();
             break;
-        case _OA_Tensor:
-            this->_dim_key = {'N', 'K', 'H', 'W'};
+        }
+        case _OA_Tensor: {
+            this->_dim_key = "NKHW";
             this->_dim_sz.insert({'N', dim1});
             this->_dim_sz.insert({'K', dim2});
             this->_dim_sz.insert({'H', dim3});
             this->_dim_sz.insert({'W', dim4});
             break;
+        }
     }
 }
 
@@ -96,8 +100,8 @@ unsigned Tensor4d<T>::dim_sz(char key) {
 /* Returns the entire size of this tensor */
 template <class T>
 unsigned Tensor4d<T>::size() {
-    return this->dim_sz[_dim_key[0]] * this->dim_sz[_dim_key[0]] * 
-    this->dim_sz[_dim_key[2]] * this->dim_sz[_dim_key[3]];
+    return this->dim_sz(_dim_key[0]) * this->dim_sz(_dim_key[0]) * 
+    this->dim_sz(_dim_key[2]) * this->dim_sz(_dim_key[3]);
 }
 
 /* Prints out the specifications of this tensor */
@@ -148,6 +152,7 @@ void Tensor4d<T>::copy_data(Tensor4d* tensor) {
         this->_data[i] = tensor->data()[i];
 }
 
+template class Tensor4d<float>;
 
 }
 
