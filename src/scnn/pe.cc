@@ -74,6 +74,57 @@ PE::idle(){
     return (_mult_array->idle()==true)&&(_xbar->idle()==true)&&(_ppu->idle()==true)&&(_oa_banks->idle(_xbar)==true);
 }
 
+bool PE::finished_layer_exec() {
+    throw runtime_error("SCNN::PE finished_layer_exec is not yet implemented");
+}
+
+void PE::prepare_current_layer(
+    dlsim::Tensor* IA_full,
+    dlsim::Tensor* OA_full,
+    dlsim::Tensor* IA_slice,
+    dlsim::Tensor* W,
+    Scnn::LayerConfig& layer_cfg
+) {
+    throw runtime_error("SCNN::PE prepare_current_layer is not yet implemented");
+}
+
+void PE::cleanup_current_layer() {
+    throw runtime_error("SCNN::PE cleanup_current_layer is not yet implemented");
+}
+
+void PE::find_work() {
+    throw runtime_error("SCNN::PE find_work is not yet implemented");
+}
+
+bool PE::sync_barrier() {
+    throw runtime_error("SCNN::PE sync_barrier is not yet implemented");
+}
+
+void PE::setup_sync_barrier() {
+    throw runtime_error("SCNN::PE setup_sync_barrier is not yet implemented");
+}
+
+void clear_sync_barrier() {
+    throw runtime_error("SCNN::PE clear_sync_barrier is not yet implemented");
+}
+
+Scnn::MultArray* PE::get_mult() {
+    return this->_mult_array;
+}
+
+Scnn::PPU* PE::get_ppu() {
+    return this->_ppu;
+}
+
+dlsim::Fmap4d_t* PE::get_IA() {
+    return this->_IA;
+}
+
+dlsim::Weight4d_t* PE::get_W() {
+    return this->_W;
+}
+
+
 } // namespace Scnn
 
 #endif

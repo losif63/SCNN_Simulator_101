@@ -14,6 +14,8 @@ namespace Scnn
 
 /**********************************************************************/
 // Constructors
+// ArchConfig::ArchConfig() {}
+
 ArchConfig::ArchConfig(
     unsigned    _pe_arr_W,
     unsigned    _pe_arr_H,

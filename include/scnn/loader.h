@@ -32,7 +32,7 @@ public:
 
 private:
     // SCNN arch
-    ArchConfig _arch_cfg;
+    ArchConfig* _arch_cfg;
 
     // current layer config
     dlsim::Fmap4d_t*   _IA;

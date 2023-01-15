@@ -3,6 +3,8 @@
 #ifndef SCNN_PERF_SIM_CC_
 #define SCNN_PERF_SIM_CC_
 
+#include <stdexcept>
+
 namespace Scnn{
 
 using namespace std;
@@ -28,6 +30,11 @@ void
 PerfSim::run(){
     PerfSim::cycle();
 };
+
+bool
+PerfSim::done() {
+    throw runtime_error("Scnn::PerfSim done() is not yet implemented");
+}
 
 void
 PerfSim::prepare_current_layer(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tensor* OA){
@@ -107,6 +114,17 @@ PerfSim::prepare_current_layer(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
 };
 
 void
+PerfSim::cleanup_current_layer() {
+    throw runtime_error("Scnn::PerfSim cleanup_current_layer() is not yet implemented");
+}
+
+void
+PerfSim::collect_stats() {
+    throw runtime_error("Scnn::PerfSim collect_stats() is not yet implemented");
+}
+
+
+void
 PerfSim::cycle(){
     // update clk cycle
     _cycle_network++; 
@@ -115,6 +133,10 @@ PerfSim::cycle(){
     // tick PE
     _pe->cycle();
 };
+
+PE* PerfSim::get_PE() {
+    return _pe;
+}
 
 }
 

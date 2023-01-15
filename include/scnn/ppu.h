@@ -34,7 +34,7 @@ public:
 
 private:
 	// PostProcessingUnit config
-    Scnn::ArchConfig        		_arch_cfg;
+    Scnn::ArchConfig*        		_arch_cfg;
 
     // i/o ports
     Scnn::VirtualChannel<OA_element>*   _port_in;

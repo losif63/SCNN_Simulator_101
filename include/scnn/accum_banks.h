@@ -39,7 +39,7 @@ public:
     bool                            empty(unsigned set_id);
 
 private:
-    Scnn::ArchConfig                _arch_cfg;
+    Scnn::ArchConfig*                _arch_cfg;
 
     unsigned                        _num_banks;
     unsigned                        _num_elem_per_bank;

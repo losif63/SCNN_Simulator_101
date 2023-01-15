@@ -78,7 +78,7 @@ public:
 
 private:
     // configurations
-    Scnn::ArchConfig     _arch_cfg;
+    Scnn::ArchConfig*     _arch_cfg;
     Scnn::LayerConfig    _layer_cfg;
 
     deque<W_vec_entry>   _WFIFO;       
