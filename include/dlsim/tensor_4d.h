@@ -23,14 +23,16 @@ public:
         TensorType  type,
         int         sparsity
     );
+
     virtual ~Tensor4d();
 
-    virtual void                    init();
+    // virtual void                    init();
     virtual unsigned				dim_sz(char key);
     virtual unsigned				size();
     virtual void					print();
 
     T* data() const;
+    unsigned sparsity();
 
     void set_data(
         unsigned    dim1,
@@ -40,12 +42,14 @@ public:
         T           init_value
     );
 
+    void copy_data(Tensor4d *tensor);
+
 private:
     
 protected:
     // We will use 1D array as 4D array
     T* _data;
-    int _sparsity;
+    unsigned _sparsity;
 
 };
 

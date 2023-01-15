@@ -144,8 +144,8 @@ int main (int argc, char** argv){
 
     perf_sim = new Scnn::PerfSim(arch_config);
 
-    // initializing
-    dnn_loader.update_curr_layer_id(0);                 // WTF man
+    // Reload layer for performance simulation
+    dnn_loader.reload(0);                 // WTF man
     
 
     // DO SIMULATION --- "a single layer for a loop"

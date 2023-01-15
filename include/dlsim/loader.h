@@ -23,7 +23,7 @@ public:
 	// update
 	void load_next_layer();
 	void clear_current_layer();
-	void update_curr_layer_id(unsigned layer_id);
+	void reload(unsigned layer_id);
 	void initialize();
 
 	// get
@@ -42,6 +42,7 @@ private:
    	unsigned int            _curr_layer_id;
    	ConvLayer*              _curr_layer;
 	string					dnn_name;
+	
 
 };
 
