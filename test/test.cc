@@ -32,6 +32,7 @@ int main(void) {
     cout << "sub-modules of this scnn simulator." << endl;
     default_random_engine gen;
     uniform_int_distribution<int> randGenerator(2, 10);
+    uniform_real_distribution<float> randFloatGen(0.0, 5.0);
 /********************************DLSIM*********************************/
 
 /**********************************************************************/
@@ -55,14 +56,31 @@ test<unsigned>(W_map->dim_sz('S'), randim3);
 test<unsigned>(W_map->dim_sz('R'), randim4);
 test<unsigned>(W_map->size(), randim1 * randim2 * randim3 * randim4);
 
-IA_map->set_data(0, 0, 0, 0, -1.0);
-IA_map->set_data(randim1-1, randim2-1, randim3-1, randim4-1, 43.332);
-// for(int i = 0; i < IA_map->size(); i++) {
-//     cout << IA_map->data()[i] << " ";
-// }
-cout << endl;
+/* Test Copying */
+for(int i = 0; i < randim1; i++) {
+    for(int j = 0; j < randim2; j++) {
+        for(int k = 0; k < randim3; k++) {
+            for(int l = 0; l < randim4; l++) {
+                IA_map->set_data(i, j, k, l, randFloatGen(gen));
+            }
+        }
+    }
+}
+W_map->copy_data(IA_map);
+bool valid_copy = true;
+for(int i = 0; i < randim1; i++) {
+    for(int j = 0; j < randim2; j++) {
+        for(int k = 0; k < randim3; k++) {
+            for(int l = 0; l < randim4; l++) {
+                if(IA_map->get_data(i, j, k, l) != W_map->get_data(i, j, k, l)) valid_copy = false;
+            }
+        }
+    }
+}
+test<bool>(valid_copy, true);
+/**********************************************************************/
 
-IA_map->print();
+
 
 /**********************************************************************/
 
