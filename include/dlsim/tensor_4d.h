@@ -42,6 +42,13 @@ public:
         T           init_value
     );
 
+    T get_data(
+        unsigned    dim1,
+        unsigned    dim2,
+        unsigned    dim3,
+        unsigned    dim4
+    );
+
     void copy_data(Tensor4d *tensor);
 
 private:

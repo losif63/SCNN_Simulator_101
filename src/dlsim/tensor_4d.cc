@@ -100,7 +100,7 @@ unsigned Tensor4d<T>::dim_sz(char key) {
 /* Returns the entire size of this tensor */
 template <class T>
 unsigned Tensor4d<T>::size() {
-    return this->dim_sz(_dim_key[0]) * this->dim_sz(_dim_key[0]) * 
+    return this->dim_sz(_dim_key[0]) * this->dim_sz(_dim_key[1]) * 
     this->dim_sz(_dim_key[2]) * this->dim_sz(_dim_key[3]);
 }
 
@@ -109,10 +109,22 @@ template <class T>
 void Tensor4d<T>::print() {
     cout << "Number of Dimensions: " << this->_ndim << endl;
     cout << "Dimension Sizes: " << endl;
-    for (auto i: this->_dim_sz) {
-        cout << i.first << " " << i.second << endl;
+    for(int i = 0; i < 4; i++) {
+        cout << _dim_key[i] << " " << dim_sz(_dim_key[i]) << endl;
     }
     /* **TODO**: Print out data */
+    for(int i = 0; i < dim_sz(_dim_key[0]); i++) {
+        for(int j = 0; j < dim_sz(_dim_key[1]); j++) {
+            for(int k = 0; k < dim_sz(_dim_key[2]); k++) {
+                for(int l = 0; l < dim_sz(_dim_key[3]); l++) {
+                    cout << get_data(i, j, k, l) << " ";
+                }
+                cout << endl;
+            }
+            cout << endl;
+        }
+        cout << "-------------------------" << endl;
+    }
 }
 
 /* Returns the entire data of tensor */
@@ -137,12 +149,27 @@ void Tensor4d<T>::set_data(
     T           init_value
 ) {
     unsigned stride[4];
-    stride[0] = dim2 * dim3 * dim4;
-    stride[1] = dim3 * dim4;
-    stride[2] = dim4;
+    stride[0] = dim_sz(_dim_key[1]) * dim_sz(_dim_key[2]) * dim_sz(_dim_key[3]);
+    stride[1] = dim_sz(_dim_key[2]) * dim_sz(_dim_key[3]);
+    stride[2] = dim_sz(_dim_key[3]);
     stride[3] = 1;
     TENSOR_4D_INDEX_AT(_data, stride, dim1, dim2, dim3, dim4) 
         = init_value;
+}
+
+template <class T>
+T Tensor4d<T>::get_data(
+    unsigned    dim1,
+    unsigned    dim2,
+    unsigned    dim3,
+    unsigned    dim4
+) {
+    unsigned stride[4];
+    stride[0] = dim_sz(_dim_key[1]) * dim_sz(_dim_key[2]) * dim_sz(_dim_key[3]);
+    stride[1] = dim_sz(_dim_key[2]) * dim_sz(_dim_key[3]);
+    stride[2] = dim_sz(_dim_key[3]);
+    stride[3] = 1;
+    return TENSOR_4D_INDEX_AT(_data, stride, dim1, dim2, dim3, dim4) ;
 }
 
 template <class T>
