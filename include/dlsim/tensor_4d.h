@@ -26,7 +26,7 @@ public:
 
     virtual ~Tensor4d();
 
-    // virtual void                    init();
+    virtual void                    randInit();
     virtual unsigned				dim_sz(char key);
     virtual unsigned				size();
     virtual void					print();

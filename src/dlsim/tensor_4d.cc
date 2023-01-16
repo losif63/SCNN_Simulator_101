@@ -104,6 +104,25 @@ unsigned Tensor4d<T>::size() {
     this->dim_sz(_dim_key[2]) * this->dim_sz(_dim_key[3]);
 }
 
+template <class T>
+void Tensor4d<T>::randInit() {
+    default_random_engine gen;
+    uniform_real_distribution<float> randProbGen(0.0, 1.0);
+    uniform_real_distribution<float> randFloatGen(0.0, 5.0);
+    for(int i = 0; i < dim_sz(_dim_key[0]); i++) {
+        for(int j = 0; j < dim_sz(_dim_key[1]); j++) {
+            for(int k = 0; k < dim_sz(_dim_key[2]); k++) {
+                for(int l = 0; l < dim_sz(_dim_key[3]); l++) {
+                    if(randProbGen(gen) < (float)sparsity()/100.0)
+                        this->set_data(i, j, k, l, (T)0.0);
+                    else 
+                        this->set_data(i, j, k, l, (T)randFloatGen(gen));
+                }
+            }
+        }
+    }
+}
+
 /* Prints out the specifications of this tensor */
 template <class T>
 void Tensor4d<T>::print() {

@@ -67,8 +67,12 @@ Tensor* ConvLayer::OFmap() {
 
 void ConvLayer::print() {
     // TODO:: Implement
-    cout << "The print function for ConvLayer is yet to be ";
-    cout << "implemented." << endl;
+    cout << "IFmap Tensor4d:: " << endl;
+    this->_IFmap->print();
+    cout << "W Tensor4d:: " << endl;
+    this->_W->print();
+    cout << "OFmap Tensor4d:: " << endl;
+    this->_OFmap->print();
 }
 
 }

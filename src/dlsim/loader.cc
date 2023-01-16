@@ -62,53 +62,55 @@ void Loader::load_next_layer() {
     
         /* Generate random value for weight */
         Weight4d_t* weight = ((Weight4d_t *)temp_layer->W());
-        float w_sparsity = (float)weight->sparsity()/100.0;
-        float randProbability, randValue;
-        default_random_engine gen;
-        uniform_real_distribution<float> probGenerator(0.0, 1.0);
-        uniform_real_distribution<float> valueGenerator(-3.0, 3.0);
-        int max_k = weight->dim_sz('K');
-        int max_c = weight->dim_sz('C');
-        int max_s = weight->dim_sz('S');
-        int max_r = weight->dim_sz('R');
-        for(int k = 0; k < max_k; k++) {
-            for(int c = 0; c < max_c; c++) {
-                for(int s = 0; s < max_s; s++) {
-                    for(int r = 0; r < max_r; r++) {
-                        randProbability = probGenerator(gen);
-                        randValue = valueGenerator(gen);
-                        if(randProbability > w_sparsity)
-                            weight->set_data(k, c, s, r, randValue);
-                        else 
-                            weight->set_data(k, c, s, r, 0.0);
-                    }
-                }
-            }
-        }
+        weight->randInit();
+        // float w_sparsity = (float)weight->sparsity()/100.0;
+        // float randProbability, randValue;
+        // default_random_engine gen;
+        // uniform_real_distribution<float> probGenerator(0.0, 1.0);
+        // uniform_real_distribution<float> valueGenerator(-3.0, 3.0);
+        // int max_k = weight->dim_sz('K');
+        // int max_c = weight->dim_sz('C');
+        // int max_s = weight->dim_sz('S');
+        // int max_r = weight->dim_sz('R');
+        // for(int k = 0; k < max_k; k++) {
+        //     for(int c = 0; c < max_c; c++) {
+        //         for(int s = 0; s < max_s; s++) {
+        //             for(int r = 0; r < max_r; r++) {
+        //                 randProbability = probGenerator(gen);
+        //                 randValue = valueGenerator(gen);
+        //                 if(randProbability > w_sparsity)
+        //                     weight->set_data(k, c, s, r, randValue);
+        //                 else 
+        //                     weight->set_data(k, c, s, r, 0.0);
+        //             }
+        //         }
+        //     }
+        // }
     
         /* If this is the first layer, generate new data as input */
         if(_curr_layer == NULL) {
             Fmap4d_t* input = ((Fmap4d_t *)temp_layer->IFmap());
-            float ia_sparsity = (float)input->sparsity()/100.0;
-            uniform_real_distribution<float> valueGenerator2(0.0, 10.0);
-            int max_n = input->dim_sz('N');
-            int max_c2 = input->dim_sz('C');
-            int max_h = input->dim_sz('H');
-            int max_w = input->dim_sz('W');
-            for(int n = 0; n < max_n; n++) {
-                for(int c = 0; c < max_c2; c++) {
-                    for(int h = 0; h < max_h; h++) {
-                        for(int w = 0; w < max_w; w++) {
-                            randProbability = probGenerator(gen);
-                            randValue = valueGenerator2(gen);
-                            if(randProbability > ia_sparsity)
-                                weight->set_data(n, c, h, w, randValue);
-                            else 
-                                weight->set_data(n, c, h, w, 0.0);
-                        }
-                    }
-                }
-            }
+            input->randInit();
+            // float ia_sparsity = (float)input->sparsity()/100.0;
+            // uniform_real_distribution<float> valueGenerator2(0.0, 10.0);
+            // int max_n = input->dim_sz('N');
+            // int max_c2 = input->dim_sz('C');
+            // int max_h = input->dim_sz('H');
+            // int max_w = input->dim_sz('W');
+            // for(int n = 0; n < max_n; n++) {
+            //     for(int c = 0; c < max_c2; c++) {
+            //         for(int h = 0; h < max_h; h++) {
+            //             for(int w = 0; w < max_w; w++) {
+            //                 randProbability = probGenerator(gen);
+            //                 randValue = valueGenerator2(gen);
+            //                 if(randProbability > ia_sparsity)
+            //                     weight->set_data(n, c, h, w, randValue);
+            //                 else 
+            //                     weight->set_data(n, c, h, w, 0.0);
+            //             }
+            //         }
+            //     }
+            // }
         }
         /* Otherwise, copy output data from previous layer */ 
         else {

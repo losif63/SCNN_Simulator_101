@@ -4,6 +4,7 @@
 
 #include "dlsim/common.h"
 #include "dlsim/fmap_4d.h"
+#include "dlsim/conv_layer.h"
 
 
 using namespace std;
@@ -56,16 +57,7 @@ test<unsigned>(W_map->dim_sz('S'), randim3);
 test<unsigned>(W_map->dim_sz('R'), randim4);
 test<unsigned>(W_map->size(), randim1 * randim2 * randim3 * randim4);
 
-/* Test Copying */
-for(int i = 0; i < randim1; i++) {
-    for(int j = 0; j < randim2; j++) {
-        for(int k = 0; k < randim3; k++) {
-            for(int l = 0; l < randim4; l++) {
-                IA_map->set_data(i, j, k, l, randFloatGen(gen));
-            }
-        }
-    }
-}
+IA_map->randInit();
 W_map->copy_data(IA_map);
 bool valid_copy = true;
 for(int i = 0; i < randim1; i++) {
@@ -78,8 +70,35 @@ for(int i = 0; i < randim1; i++) {
     }
 }
 test<bool>(valid_copy, true);
+delete IA_map;
+delete W_map;
 /**********************************************************************/
+/* ConvLayer */
+map<string, unsigned int> *layer1 = new map<string, unsigned int>;
+layer1->insert({"N", randGenerator(gen)});
+layer1->insert({"C", randGenerator(gen)});
+layer1->insert({"K", randGenerator(gen)});
+layer1->insert({"H", randGenerator(gen)});
+layer1->insert({"W", randGenerator(gen)});
+layer1->insert({"R", randGenerator(gen)});
+layer1->insert({"S", randGenerator(gen)});
+// For the sparsity, the actual value is x/100
+layer1->insert({"IA_sparsity", 100});
+layer1->insert({"W_sparsity", 50});
 
+dlsim::ConvLayer* conv = new dlsim::ConvLayer(layer1);
+((dlsim::Fmap4d_t*)conv->IFmap())->randInit();
+((dlsim::Fmap4d_t*)conv->W())->randInit();
+((dlsim::Fmap4d_t*)conv->OFmap())->randInit();
+
+test<float>(((dlsim::Fmap4d_t*)conv->IFmap())->data()[0], 0.0);
+test<float>(((dlsim::Fmap4d_t*)conv->IFmap())->data()[((dlsim::Fmap4d_t*)conv->IFmap())->size()-1], 0.0);
+bool allZero = true;
+for(int i = 0; i < ((dlsim::Fmap4d_t*)conv->IFmap())->size(); i++) {
+    if(((dlsim::Fmap4d_t*)conv->IFmap())->data()[i] != 0.0) allZero = false;
+}
+test<bool>(allZero, true);
+// conv->print();
 
 
 /**********************************************************************/
