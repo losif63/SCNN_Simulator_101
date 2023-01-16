@@ -1,5 +1,9 @@
 #include <iostream>
 
+#include "dlsim/common.h"
+#include "dlsim/fmap_4d.h"
+
+
 using namespace std;
 
 int main(void) {
@@ -9,11 +13,15 @@ int main(void) {
 /********************************DLSIM*********************************/
 
 
-
-
+dlsim::Fmap4d_t* fmap = new dlsim::Fmap4d_t(4, 4, 4, 4, 4, _IA_Tensor, 50);
+fmap->print();
 
 
 /*********************************SCNN*********************************/
+
+
+
+
 
 
 

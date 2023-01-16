@@ -110,7 +110,7 @@ void Tensor4d<T>::print() {
     cout << "Number of Dimensions: " << this->_ndim << endl;
     cout << "Dimension Sizes: " << endl;
     for (auto i: this->_dim_sz) {
-        cout << i.first << " " << i.second << endl << endl;
+        cout << i.first << " " << i.second << endl;
     }
     /* **TODO**: Print out data */
 }
