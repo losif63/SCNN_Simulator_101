@@ -5,6 +5,7 @@
 #include "dlsim/common.h"
 #include "dlsim/fmap_4d.h"
 #include "dlsim/conv_layer.h"
+#include "dlsim/loader.h"
 
 
 using namespace std;
@@ -98,13 +99,29 @@ for(int i = 0; i < ((dlsim::Fmap4d_t*)conv->IFmap())->size(); i++) {
     if(((dlsim::Fmap4d_t*)conv->IFmap())->data()[i] != 0.0) allZero = false;
 }
 test<bool>(allZero, true);
-// conv->print();
+/**********************************************************************/
+/* DLSIM::Loader */
+dlsim::Loader* loader = new dlsim::Loader("config/examplenet");
+test<unsigned>(loader->num_layers(), 3);
+loader->load_next_layer();
+loader->current_layer()->print();
+loader->clear_current_layer();
+test<unsigned>(loader->num_layers(), 2);
+loader->load_next_layer();
+loader->current_layer()->print();
+loader->clear_current_layer();
+test<unsigned>(loader->num_layers(), 1);
+loader->load_next_layer();
+loader->current_layer()->print();
+loader->clear_current_layer();
+test<unsigned>(loader->num_layers(), 0);
+loader->reload(0);
+test<unsigned>(loader->num_layers(), 3);
+// loader->print_layer();
+
 
 
 /**********************************************************************/
-
-
-
 /*********************************SCNN*********************************/
 
 

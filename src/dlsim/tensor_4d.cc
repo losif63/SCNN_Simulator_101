@@ -123,6 +123,19 @@ void Tensor4d<T>::randInit() {
     }
 }
 
+template <class T>
+void Tensor4d<T>::zeroInit() {
+    for(int i = 0; i < dim_sz(_dim_key[0]); i++) {
+        for(int j = 0; j < dim_sz(_dim_key[1]); j++) {
+            for(int k = 0; k < dim_sz(_dim_key[2]); k++) {
+                for(int l = 0; l < dim_sz(_dim_key[3]); l++) {
+                    this->set_data(i, j, k, l, (T)0.0);
+                }
+            }
+        }
+    }
+}
+
 /* Prints out the specifications of this tensor */
 template <class T>
 void Tensor4d<T>::print() {

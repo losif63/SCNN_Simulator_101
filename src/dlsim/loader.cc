@@ -7,6 +7,8 @@
 #ifndef DLSIM_LOADER_CC_
 #define DLSIM_LOADER_CC_
 
+#include <iostream>
+#include <fstream>
 #include "dlsim/loader.h"
 #include "dlsim/tensor_4d.h"
 
@@ -59,58 +61,15 @@ void Loader::load_next_layer() {
     if(_cfg_network->size() > 0) {
         /* Construct new ConvLayer object */
         temp_layer = new ConvLayer(_cfg_network->back());
-    
         /* Generate random value for weight */
         Weight4d_t* weight = ((Weight4d_t *)temp_layer->W());
         weight->randInit();
-        // float w_sparsity = (float)weight->sparsity()/100.0;
-        // float randProbability, randValue;
-        // default_random_engine gen;
-        // uniform_real_distribution<float> probGenerator(0.0, 1.0);
-        // uniform_real_distribution<float> valueGenerator(-3.0, 3.0);
-        // int max_k = weight->dim_sz('K');
-        // int max_c = weight->dim_sz('C');
-        // int max_s = weight->dim_sz('S');
-        // int max_r = weight->dim_sz('R');
-        // for(int k = 0; k < max_k; k++) {
-        //     for(int c = 0; c < max_c; c++) {
-        //         for(int s = 0; s < max_s; s++) {
-        //             for(int r = 0; r < max_r; r++) {
-        //                 randProbability = probGenerator(gen);
-        //                 randValue = valueGenerator(gen);
-        //                 if(randProbability > w_sparsity)
-        //                     weight->set_data(k, c, s, r, randValue);
-        //                 else 
-        //                     weight->set_data(k, c, s, r, 0.0);
-        //             }
-        //         }
-        //     }
-        // }
-    
+        Fmap4d_t* output = ((Fmap4d_t*)temp_layer->OFmap());
+        output->zeroInit();
         /* If this is the first layer, generate new data as input */
         if(_curr_layer == NULL) {
             Fmap4d_t* input = ((Fmap4d_t *)temp_layer->IFmap());
             input->randInit();
-            // float ia_sparsity = (float)input->sparsity()/100.0;
-            // uniform_real_distribution<float> valueGenerator2(0.0, 10.0);
-            // int max_n = input->dim_sz('N');
-            // int max_c2 = input->dim_sz('C');
-            // int max_h = input->dim_sz('H');
-            // int max_w = input->dim_sz('W');
-            // for(int n = 0; n < max_n; n++) {
-            //     for(int c = 0; c < max_c2; c++) {
-            //         for(int h = 0; h < max_h; h++) {
-            //             for(int w = 0; w < max_w; w++) {
-            //                 randProbability = probGenerator(gen);
-            //                 randValue = valueGenerator2(gen);
-            //                 if(randProbability > ia_sparsity)
-            //                     weight->set_data(n, c, h, w, randValue);
-            //                 else 
-            //                     weight->set_data(n, c, h, w, 0.0);
-            //             }
-            //         }
-            //     }
-            // }
         }
         /* Otherwise, copy output data from previous layer */ 
         else {
@@ -139,24 +98,27 @@ void Loader::reload(unsigned layer_id) {
 }
 
 void Loader::initialize() {
-    /* Todo:: Initialize loader from filename stored in dnn_name */
-    map<string, unsigned int> *layer1 = new map<string, unsigned int>;
-    layer1->insert({"N", 1});
-    layer1->insert({"C", 4});
-    layer1->insert({"K", 4});
-    layer1->insert({"H", 16});
-    layer1->insert({"W", 16});
-    layer1->insert({"R", 3});
-    layer1->insert({"S", 3});
-    // For the sparsity, the actual value is x/100
-    layer1->insert({"IA_sparsity", 50});
-    layer1->insert({"W_sparsity", 50});
-
     _cfg_network = new deque<map<string, unsigned int>*>;
-    _cfg_network->push_front(layer1);
-
     _curr_layer = NULL;
     _curr_layer_id = 0;
+
+    string Text;
+    ifstream ReadFile(dnn_name);
+    if(!ReadFile) {
+        cerr << "Cannot read file " << dnn_name << endl;
+    }
+    getline(ReadFile, Text);
+    int num_layer = stoi(Text.substr(Text.find(" ")+1));
+    for(int i = 0; i < num_layer; i++) {
+        map<string, unsigned int> *layer = new map<string, unsigned int>;
+        for(int j = 0; j < 9; j++) {
+            getline(ReadFile, Text);
+            layer->insert({Text.substr(0, Text.find(":")), stoi(Text.substr(Text.find(" ")+1))});
+        }
+        _cfg_network->push_front(layer);
+        getline(ReadFile, Text);
+    }
+    ReadFile.close();
 }
 
 ConvLayer* Loader::current_layer() {

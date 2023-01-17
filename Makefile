@@ -92,5 +92,6 @@ clean:
 	rm -rf $(TESTOBJ_DIR)/*.o
 	rm -rf $(TESTOBJ_DIR)/dlsim/*.o
 	rm -rf $(TESTOBJ_DIR)/scnn/*.o
-	rm $(TOP_EXE)
 	rm $(TEST_EXE)
+	rm $(TOP_EXE)
+	
