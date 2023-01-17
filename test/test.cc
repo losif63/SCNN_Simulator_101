@@ -17,7 +17,7 @@ int total_count = 0;
 template <class T>
 void test(T a, T b) {
     total_count++;
-    cout << "Test # " << total_count << " ";
+    cout << "Test case # " << total_count << " ";
     if(a == b) {
         succ_count++;
         cout << "PASSED" << endl;
@@ -43,7 +43,6 @@ unsigned int randim1 = randGenerator(gen);
 unsigned int randim2 = randGenerator(gen);
 unsigned int randim3 = randGenerator(gen);
 unsigned int randim4 = randGenerator(gen);
-cout << randim1 << ", " << randim2 << ", " << randim3 << ", " << randim4 << endl;
 
 dlsim::Fmap4d_t* IA_map = new dlsim::Fmap4d_t(4, randim1, randim2, randim3, randim4, _IA_Tensor, 50);
 dlsim::Fmap4d_t* W_map = new dlsim::Fmap4d_t(4, randim1, randim2, randim3, randim4, _W_Tensor, 50);
@@ -104,15 +103,15 @@ test<bool>(allZero, true);
 dlsim::Loader* loader = new dlsim::Loader("config/examplenet");
 test<unsigned>(loader->num_layers(), 3);
 loader->load_next_layer();
-loader->current_layer()->print();
+// loader->current_layer()->print();
 loader->clear_current_layer();
 test<unsigned>(loader->num_layers(), 2);
 loader->load_next_layer();
-loader->current_layer()->print();
+// loader->current_layer()->print();
 loader->clear_current_layer();
 test<unsigned>(loader->num_layers(), 1);
 loader->load_next_layer();
-loader->current_layer()->print();
+// loader->current_layer()->print();
 loader->clear_current_layer();
 test<unsigned>(loader->num_layers(), 0);
 loader->reload(0);

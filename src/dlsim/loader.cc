@@ -43,14 +43,15 @@ bool Loader::done() {
 }
 
 void Loader::print_layer() {
-    cout << "Print all unprocessed layers & current layer";
+    cout << "Print current layer" << endl;
     cout << "-------------------------------------------------\n";
-    for(map<string, unsigned int>* layer : *_cfg_network) {
-        for(auto i : *layer) {
-            cout << '{' << i.first << ", " << i.second << "}\n";
-        }
-        cout << "-------------------------------------------------\n";
+    map<string, unsigned int>* layer = _cfg_network->back();
+    // for(map<string, unsigned int>* layer : *_cfg_network) {
+    for(auto i : *layer) {
+        cout << '{' << i.first << ", " << i.second << "}\n";
     }
+    cout << "-------------------------------------------------\n";
+    // }
     
 }
 
