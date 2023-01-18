@@ -1,4 +1,4 @@
-TOP_EXE := scnn
+TOP_EXE := SCNN
 TEST_EXE := TESTER
 
 CC := g++
@@ -92,6 +92,6 @@ clean:
 	rm -rf $(TESTOBJ_DIR)/*.o
 	rm -rf $(TESTOBJ_DIR)/dlsim/*.o
 	rm -rf $(TESTOBJ_DIR)/scnn/*.o
-	rm $(TEST_EXE)
 	rm $(TOP_EXE)
+	rm $(TEST_EXE)
 	

@@ -6,6 +6,8 @@
 #include "dlsim/fmap_4d.h"
 #include "dlsim/conv_layer.h"
 #include "dlsim/loader.h"
+#include "scnn/common.h"
+#include "scnn/vir_ch.h"
 
 
 using namespace std;
@@ -38,6 +40,9 @@ int main(void) {
 /********************************DLSIM*********************************/
 
 /**********************************************************************/
+cout << "-----------------------------------------------------------\n";
+cout << "Testing Tensor4d classes:" << endl; 
+
 /*Fmap4d_t, Weight4d_t, Tensor4d_T*/
 unsigned int randim1 = randGenerator(gen);
 unsigned int randim2 = randGenerator(gen);
@@ -74,6 +79,8 @@ delete IA_map;
 delete W_map;
 /**********************************************************************/
 /* ConvLayer */
+cout << "-----------------------------------------------------------\n";
+cout << "Testing ConvLayer class:" << endl; 
 map<string, unsigned int> *layer1 = new map<string, unsigned int>;
 layer1->insert({"N", randGenerator(gen)});
 layer1->insert({"C", randGenerator(gen)});
@@ -100,6 +107,8 @@ for(int i = 0; i < ((dlsim::Fmap4d_t*)conv->IFmap())->size(); i++) {
 test<bool>(allZero, true);
 /**********************************************************************/
 /* DLSIM::Loader */
+cout << "-----------------------------------------------------------\n";
+cout << "Testing DLSIM::Loader class:" << endl; 
 dlsim::Loader* loader = new dlsim::Loader("config/examplenet");
 test<unsigned>(loader->num_layers(), 3);
 loader->load_next_layer();
@@ -121,12 +130,42 @@ test<unsigned>(loader->num_layers(), 3);
 
 
 /**********************************************************************/
+
 /*********************************SCNN*********************************/
 
 
+/**********************************************************************/
+/* VirtualChannel */
+cout << "-----------------------------------------------------------\n";
+cout << "Testing VirtualChannel class:" << endl; 
+Scnn::VirtualChannel<int>* channel1 = new Scnn::VirtualChannel<int>;
+unsigned channelNumber = randGenerator(gen);
+unsigned entryNumber = randGenerator(gen);
+channel1->init(channelNumber, entryNumber);
+cout << "Testing VirtualChannel initialization:" << endl;
+test<unsigned>(channel1->num_phy_ch_q(), channelNumber);
+test<unsigned>(channel1->num_q_entries_per_phy_ch(), entryNumber);
+
+cout << "Testing canDrain and canReceive for " << channelNumber << " channels:" << endl;
+for(int i = 0; i < channelNumber; i++) {
+    test<bool>(channel1->canDrain(i), false);
+    test<bool>(channel1->canReceive(i), true);
+}
+unsigned randomChannel1 = randGenerator(gen) % channelNumber;
+cout << "Testing channel filling on channel number " << randomChannel1 << ":" << endl;
+test<bool>(channel1->isFullOnPhyCh(randomChannel1), false);
+for(int i = 0; i < entryNumber; i++) {
+    channel1->receive(randomChannel1, randomChannel1);
+}
+test<bool>(channel1->isFullOnPhyCh(randomChannel1), true);
+test<bool>(channel1->canDrain(randomChannel1), true);
+test<bool>(channel1->canReceive(randomChannel1), false);
+
+test<int>(channel1->next_elem_to_be_drained(randomChannel1), randomChannel1);
+test<int>(channel1->drain(randomChannel1), randomChannel1);
 
 
-
+/**********************************************************************/
 
 
 cout << fail_count << " out of " << total_count << " test cases failed." << endl;

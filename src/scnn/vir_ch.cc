@@ -21,6 +21,7 @@ VirtualChannel<T>::VirtualChannel() {
     // Negative numbers mean not initialized yet
     this->_num_phy_ch_q = -1;
     this->_num_q_entries_per_phy_ch = -1;
+    _phy_ch_q = NULL;
 }
 
 /**********************************************************************/
@@ -28,21 +29,11 @@ VirtualChannel<T>::VirtualChannel() {
 template <class T>
 VirtualChannel<T>::~VirtualChannel() {
     /* TODO: Free memory allocated to deque structure */
+    if(_phy_ch_q != NULL) delete _phy_ch_q;
 }
 
 /**********************************************************************/
 // Member functions
-
-template <class T>
-bool VirtualChannel<T>::isFullOnPhyCh(unsigned phy_id) {
-    assert((_num_phy_ch_q > 0) && (phy_id >= 0)
-    && (phy_id < _num_phy_ch_q));
-    
-    /* <WARNING> This part is susceptible to huge runtime errors */
-    if(((deque<T>*)&_phy_ch_q[phy_id])->size() < 
-    _num_q_entries_per_phy_ch) return false;
-    else return true;
-}
 
 template <class T>
 void VirtualChannel<T>::init(unsigned num_phy_ch_q, 
@@ -51,16 +42,29 @@ void VirtualChannel<T>::init(unsigned num_phy_ch_q,
     assert(num_q_entries_per_phy_ch > 0);   
     this->_num_phy_ch_q = num_phy_ch_q;
     this->_num_q_entries_per_phy_ch = num_q_entries_per_phy_ch;
+    _phy_ch_q = new deque<T>[num_phy_ch_q];
+}
 
-    deque<T> queueList[num_phy_ch_q];
-    _phy_ch_q = queueList;
+template <class T>
+bool VirtualChannel<T>::isFullOnPhyCh(unsigned phy_id) {
+    assert((_num_phy_ch_q > 0) && (phy_id >= 0)
+    && (phy_id < _num_phy_ch_q));
+    
+    // cout << "current size: " << _phy_ch_q[phy_id].size() << endl;
+    // cout << "limit: " << _num_q_entries_per_phy_ch << endl;
+    if(_phy_ch_q[phy_id].size() < _num_q_entries_per_phy_ch)
+        return false;
+    else return true;
 }
 
 /* My guess: If there are no elements in the channel, it is idle */
 template <class T>
 bool VirtualChannel<T>::idle() {
-    assert((_num_phy_ch_q > 0) && (_num_q_entries_per_phy_ch) > 0);
-    for(int i = 0; i < this->_num_phy_ch_q; i++) {
+    // Not initialized yet
+    if((_num_phy_ch_q < 0) && (_num_q_entries_per_phy_ch) < 0)
+        return true;
+    
+    for(int i = 0; i < _num_phy_ch_q; i++) {
         // If any one of the channels has element, it is not idle
         if(canDrain(i)) return false;
     }
@@ -76,27 +80,30 @@ template <class T>
 bool VirtualChannel<T>::canDrain(unsigned phy_id) {
     assert((_num_phy_ch_q > 0) && (phy_id >= 0)
     && (phy_id < _num_phy_ch_q));
-    /* <WARNING> This part is susceptible to huge runtime errors */
-    if(((deque<T>*)&_phy_ch_q[phy_id])->size() > 0) return true;
+    if(_phy_ch_q[phy_id].size() > 0) return true;
     else return false;
 }
 
 template <class T>
 void VirtualChannel<T>::receive(T elem, unsigned phy_id) {
     assert(this->canReceive(phy_id));
-    ((deque<T>)&_phy_ch_q[phy_id])->push_front(elem);
+    _phy_ch_q[phy_id].push_front(elem);
+    // cout << "Just pushed an element!!\n";
+    // cout << "Pushed element: " << _phy_ch_q[phy_id].front() << endl;
 }
 
 template <class T>
 T VirtualChannel<T>::drain(unsigned phy_id) {
     assert(this->canDrain(phy_id));
-    return ((deque<T>)&_phy_ch_q[phy_id])->pop_back();
+    T temp = _phy_ch_q[phy_id].back();
+    _phy_ch_q[phy_id].pop_back();
+    return temp;
 }
 
 template <class T>
 T VirtualChannel<T>::next_elem_to_be_drained(unsigned phy_id) {
     assert(canDrain(phy_id));
-    return ((deque<T>)&_phy_ch_q[phy_id])->back();
+    return _phy_ch_q[phy_id].back();
 }
 
 template <class T>
@@ -108,6 +115,9 @@ template <class T>
 unsigned VirtualChannel<T>::num_q_entries_per_phy_ch() {
     return this->_num_q_entries_per_phy_ch;
 }
+
+template class VirtualChannel<int>;
+// template class VirtualChannel<float>;
 
 /**********************************************************************/
 }

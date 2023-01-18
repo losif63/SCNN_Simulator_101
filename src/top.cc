@@ -43,7 +43,7 @@ int main (int argc, char** argv){
     unsigned    xbar_scale_out_ratio  = 1;
     unsigned    xbar_out  = xbar_in*(xbar_scale_out_ratio);
         
-    // q
+    // q --> queue?
     unsigned    xbar_in_num_phy_ch_q  = xbar_out;
     unsigned    xbar_in_num_q_entries_per_phy_ch = 1;
     unsigned    xbar_out_num_phy_ch_q  = 1;
