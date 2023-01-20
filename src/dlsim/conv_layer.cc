@@ -43,7 +43,7 @@ ConvLayer::ConvLayer(const map<string,unsigned int>* cfg_curr_layer)
         cfg_curr_layer->at("H"), 
         cfg_curr_layer->at("W"),
         _OA_Tensor,
-        0
+        100           // OA sparsity is automatically set to 100 (empty)
     );
 }
 

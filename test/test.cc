@@ -8,7 +8,7 @@
 #include "dlsim/loader.h"
 #include "scnn/common.h"
 #include "scnn/vir_ch.h"
-
+#include "scnn/loader.h"
 
 using namespace std;
 
@@ -105,6 +105,7 @@ for(int i = 0; i < ((dlsim::Fmap4d_t*)conv->IFmap())->size(); i++) {
     if(((dlsim::Fmap4d_t*)conv->IFmap())->data()[i] != 0.0) allZero = false;
 }
 test<bool>(allZero, true);
+delete conv;
 /**********************************************************************/
 /* DLSIM::Loader */
 cout << "-----------------------------------------------------------\n";
@@ -124,12 +125,9 @@ loader->load_next_layer();
 loader->clear_current_layer();
 test<unsigned>(loader->num_layers(), 0);
 loader->reload(0);
+loader->load_next_layer();
 test<unsigned>(loader->num_layers(), 3);
 // loader->print_layer();
-
-
-
-/**********************************************************************/
 
 /*********************************SCNN*********************************/
 
@@ -139,6 +137,10 @@ test<unsigned>(loader->num_layers(), 3);
 cout << "-----------------------------------------------------------\n";
 cout << "Testing VirtualChannel class:" << endl; 
 Scnn::VirtualChannel<int>* channel1 = new Scnn::VirtualChannel<int>;
+randGenerator(gen);
+randGenerator(gen);
+randGenerator(gen);
+randGenerator(gen);
 unsigned channelNumber = randGenerator(gen);
 unsigned entryNumber = randGenerator(gen);
 channel1->init(channelNumber, entryNumber);
@@ -164,6 +166,76 @@ test<bool>(channel1->canReceive(randomChannel1), false);
 test<int>(channel1->next_elem_to_be_drained(randomChannel1), randomChannel1);
 test<int>(channel1->drain(randomChannel1), randomChannel1);
 
+
+/**********************************************************************/
+/* Scnn::Loader */
+cout << "-----------------------------------------------------------\n";
+cout << "Testing Scnn::Loader class:" << endl; 
+
+// pe array
+unsigned    pe_arr_W = 4;
+unsigned    pe_arr_H = 4;
+
+// pe & mult_array -> Multiplier Array
+unsigned    mult_arr_M = 4;
+unsigned    mult_arr_W = 4;
+    
+// x-bar -> crossbar
+unsigned    xbar_in = mult_arr_M * mult_arr_W; 
+unsigned    xbar_scale_out_ratio  = 1;
+unsigned    xbar_out  = xbar_in*(xbar_scale_out_ratio);
+    
+// q --> queue?
+unsigned    xbar_in_num_phy_ch_q  = xbar_out;
+unsigned    xbar_in_num_q_entries_per_phy_ch = 1;
+unsigned    xbar_out_num_phy_ch_q  = 1;
+unsigned    xbar_out_num_q_entries_per_phy_ch = 2;
+    
+// sram size
+unsigned    chunk_sz_for_accum_bank_sizing = 2;
+unsigned    max_num_elem_per_bank = 0;
+
+unsigned    max_OA_H_per_PE = 0;
+unsigned    max_OA_W_per_PE = 0;
+unsigned    min_OA_H_per_PE = 1080;
+unsigned    min_OA_W_per_PE = 1080;
+
+Scnn::ArchConfig arch_config(
+    // pe
+    pe_arr_W,
+    pe_arr_H,
+
+    // mult array            
+    mult_arr_M, 
+    mult_arr_W, 
+
+    //xbar
+    xbar_in_num_phy_ch_q, 
+    xbar_in_num_q_entries_per_phy_ch, 
+    xbar_out_num_phy_ch_q, 
+    xbar_out_num_q_entries_per_phy_ch, 
+    xbar_scale_out_ratio, 
+    xbar_in, 
+    xbar_out, 
+
+    //sram size
+    chunk_sz_for_accum_bank_sizing, 
+    max_num_elem_per_bank, 
+
+    max_OA_H_per_PE, 
+    max_OA_W_per_PE, 
+    min_OA_H_per_PE, 
+    min_OA_W_per_PE
+);
+
+Scnn::LayerConfig layerConfig1(1, 4, 16, 16, 4, 3, 3, 2);
+
+Scnn::Loader* loader_scnn = new Scnn::Loader(arch_config);
+loader_scnn->setup_IA_W_and_OA(loader->current_layer()->IFmap(),
+    loader->current_layer()->W(), loader->current_layer()->OFmap());
+
+loader_scnn->distribute_IA_across_spatial_PEs(layerConfig1);
+test<float>(loader_scnn->IA_slice()[0].get_data(0, 0, 0, 0), 0.0f);
 
 /**********************************************************************/
 

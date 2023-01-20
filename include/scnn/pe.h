@@ -50,7 +50,7 @@ public:
     Scnn::MultArray*              get_mult();
 	Scnn::PPU*	                  get_ppu();
 
-    dlsim::Fmap4d_t*	          get_IA();
+    dlsim::Fmap4d_t*	          get_IA_slice();
     dlsim::Weight4d_t*            get_W();
 
 private:
@@ -74,7 +74,7 @@ private:
     dlsim::Fmap4d_t*            _OA_full;
 
 	// IA and W (for this PE)
-	dlsim::Fmap4d_t*	                  _IA;
+	dlsim::Fmap4d_t*	                  _IA_slice;
 	dlsim::Weight4d_t*			          _W;
 
     friend class PerfSim;

@@ -31,8 +31,8 @@ int main (int argc, char** argv){
     // SCNN arch config
 
     // pe array
-    unsigned    pe_arr_W = 1;
-    unsigned    pe_arr_H = 1;
+    unsigned    pe_arr_W = 4;
+    unsigned    pe_arr_H = 4;
 
     // pe & mult_array -> Multiplier Array
     unsigned    mult_arr_M = 4;

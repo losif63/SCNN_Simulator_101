@@ -116,8 +116,8 @@ Scnn::PPU* PE::get_ppu() {
     return this->_ppu;
 }
 
-dlsim::Fmap4d_t* PE::get_IA() {
-    return this->_IA;
+dlsim::Fmap4d_t* PE::get_IA_slice() {
+    return this->_IA_slice;
 }
 
 dlsim::Weight4d_t* PE::get_W() {

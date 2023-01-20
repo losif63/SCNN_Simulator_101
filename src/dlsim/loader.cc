@@ -56,7 +56,8 @@ void Loader::print_layer() {
 }
 
 /* This function deletes the previous ConvLayer if it exists, 
-   and creates a new ConvLayer object & loads it. */
+   and creates a new ConvLayer object & loads it. This function also 
+   initializes all tensors in the created ConvLayer object.*/
 void Loader::load_next_layer() {
     ConvLayer* temp_layer = NULL;
     if(_cfg_network->size() > 0) {
@@ -98,6 +99,8 @@ void Loader::reload(unsigned layer_id) {
     this->_curr_layer_id = layer_id;
 }
 
+
+/* Reads the given file and initalizes the deque<map<string, unsigned int>*> structure */
 void Loader::initialize() {
     _cfg_network = new deque<map<string, unsigned int>*>;
     _curr_layer = NULL;
