@@ -53,15 +53,15 @@ ConvLayer::~ConvLayer() {
     delete _OFmap;
 }
 
-Tensor* ConvLayer::IFmap() {
+Fmap4d_t* ConvLayer::IFmap() {
     return this->_IFmap;
 }
 
-Tensor* ConvLayer::W() {
+Weight4d_t* ConvLayer::W() {
     return this->_W;
 }
 
-Tensor* ConvLayer::OFmap() {
+Fmap4d_t* ConvLayer::OFmap() {
     return this->_OFmap;
 }
 

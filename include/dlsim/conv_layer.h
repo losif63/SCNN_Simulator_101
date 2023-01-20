@@ -15,9 +15,9 @@ public:
     ConvLayer(const map<string,unsigned int>* cfg_curr_layer);
     virtual ~ConvLayer();
 
-    virtual Tensor* IFmap();
-    virtual Tensor* W();
-    virtual Tensor* OFmap();
+    virtual Fmap4d_t* IFmap();
+    virtual Weight4d_t* W();
+    virtual Fmap4d_t* OFmap();
 
     virtual void print();
 
