@@ -1,6 +1,8 @@
 #ifndef SCNN_COMMON_H_
 #define SCNN_COMMON_H_
 
+#define INPUT_HALO_
+
 #include <iomanip>
 #include <deque>
 #include <vector>

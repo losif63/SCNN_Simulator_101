@@ -49,7 +49,8 @@ void Loader::setup_IA_W_and_OA(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
 }
 
 void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
-    throw runtime_error("SCNN::Loader method distribute_IA_across_spatial_PEs is not yet implemented");
+    
+
 }
 
 void Loader::clear_IA_slice_and_W() {
@@ -62,19 +63,19 @@ void Loader::check_IA_W_density() {
 }
 
 dlsim::Fmap4d_t* Loader::IA_slice() {
-    throw runtime_error("SCNN::Loader method IA_slice is not yet implemented");
+    return _IA_slice;
 }
 
 dlsim::Fmap4d_t* Loader::IA() {
-    throw runtime_error("SCNN::Loader method IA is not yet implemented");
+    return _IA;
 }
 
 dlsim::Weight4d_t* Loader::W() {
-    throw runtime_error("SCNN::Loader method W is not yet implemented");
+    return _W;
 }
 
 dlsim::Fmap4d_t* Loader::OA() {
-    throw runtime_error("SCNN::Loader method OA is not yet implemented");
+    return _OA;
 }
 
 }
