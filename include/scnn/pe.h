@@ -25,10 +25,10 @@ public:
     bool    finished_layer_exec();	
     bool    idle();
 	void    prepare_current_layer(
-                dlsim::Tensor* IA_full,
-                dlsim::Tensor* OA_full,
-                dlsim::Tensor* IA_slice,
-                dlsim::Tensor* W,
+                dlsim::Fmap4d_t* IA_full,
+                dlsim::Fmap4d_t* OA_full,
+                dlsim::Fmap4d_t** IA_slice,
+                dlsim::Weight4d_t* W,
                 Scnn::LayerConfig& layer_cfg
                 );
 	void	cleanup_current_layer();
@@ -50,7 +50,7 @@ public:
     Scnn::MultArray*              get_mult();
 	Scnn::PPU*	                  get_ppu();
 
-    dlsim::Fmap4d_t*	          get_IA_slice();
+    dlsim::Fmap4d_t**	          get_IA_slice();
     dlsim::Weight4d_t*            get_W();
 
 private:
@@ -74,7 +74,7 @@ private:
     dlsim::Fmap4d_t*            _OA_full;
 
 	// IA and W (for this PE)
-	dlsim::Fmap4d_t*	                  _IA_slice;
+	dlsim::Fmap4d_t**	                  _IA_slice;
 	dlsim::Weight4d_t*			          _W;
 
     friend class PerfSim;

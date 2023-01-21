@@ -36,6 +36,7 @@ Tensor4d<T>::Tensor4d(
 ) {
     this->_ndim = ndim; // This should be 4 no matter what
     this->_data = new T[dim1 * dim2 * dim3 * dim4];
+    this->_size = dim1 * dim2 * dim3 * dim4;
     this->_sparsity = sparsity;
     switch(type) {
         case _IA_Tensor: {
@@ -185,8 +186,11 @@ void Tensor4d<T>::set_data(
     stride[1] = dim_sz(_dim_key[2]) * dim_sz(_dim_key[3]);
     stride[2] = dim_sz(_dim_key[3]);
     stride[3] = 1;
+    // cout << "Write Limit: " << this->_size-1 << endl;
+    // cout << "Calculated index: " << dim1 * stride[0] + dim2 * stride[1] + dim3 * stride[2] + dim4 * stride[3] << endl;
     TENSOR_4D_INDEX_AT(_data, stride, dim1, dim2, dim3, dim4) 
         = init_value;
+    // cout << "Setting data successful" << endl;
 }
 
 template <class T>
@@ -201,7 +205,9 @@ T Tensor4d<T>::get_data(
     stride[1] = dim_sz(_dim_key[2]) * dim_sz(_dim_key[3]);
     stride[2] = dim_sz(_dim_key[3]);
     stride[3] = 1;
-    return TENSOR_4D_INDEX_AT(_data, stride, dim1, dim2, dim3, dim4) ;
+    // cout << "Read Limit: " << this->_size-1 << endl;
+    // cout << "Calculated index: " << dim1 * stride[0] + dim2 * stride[1] + dim3 * stride[2] + dim4 * stride[3] << endl;
+    return TENSOR_4D_INDEX_AT(_data, stride, dim1, dim2, dim3, dim4);
 }
 
 template <class T>

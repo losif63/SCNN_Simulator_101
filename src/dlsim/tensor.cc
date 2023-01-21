@@ -20,6 +20,8 @@ Tensor::Tensor() {}
 // Destructors
 Tensor::~Tensor() {}
 
+char* Tensor::key() {return _dim_key;}
+
 /**********************************************************************/
 // Member Functions
 

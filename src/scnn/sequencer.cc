@@ -16,7 +16,7 @@ Sequencer::Sequencer() {}
 
 Sequencer::~Sequencer() {}
 
-void Sequencer::init(Scnn::LayerConfig& layer_cfg, dlsim::Tensor* IA_slice, dlsim::Tensor* W) {
+void Sequencer::init(Scnn::LayerConfig& layer_cfg, dlsim::Tensor** IA_slice, dlsim::Tensor* W) {
     throw runtime_error("SCNN::Sequencer init is not yet implemented");
 }
 

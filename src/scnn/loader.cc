@@ -48,8 +48,69 @@ void Loader::setup_IA_W_and_OA(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
     this->_OA = (dlsim::Fmap4d_t*)OA;
 }
 
-void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
-    
+void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg, Scnn::ArchConfig& arch_cfg) {
+    // For now, we'll be doing input halo
+    unsigned W_per_PE = (layer_cfg.get_W()/arch_cfg.get_pe_arr_W()) + layer_cfg.get_R();
+    unsigned H_per_PE = (layer_cfg.get_H()/arch_cfg.get_pe_arr_H()) + layer_cfg.get_S();
+
+    _IA_slice = new dlsim::Fmap4d_t*[arch_cfg.get_pe_arr_W() * arch_cfg.get_pe_arr_H()];
+    for(int i = 0; i < arch_cfg.get_pe_arr_H(); i++) {
+        for(int j = 0; j < arch_cfg.get_pe_arr_W(); j++) {
+            int currIndex = i * arch_cfg.get_pe_arr_W() + j;
+            int new_H = ((layer_cfg.get_H() + layer_cfg.get_S() - 1) / arch_cfg.get_pe_arr_H()) + 1;
+            int new_W = ((layer_cfg.get_W() + layer_cfg.get_R() - 1) / arch_cfg.get_pe_arr_W()) + 1;
+            _IA_slice[currIndex] = new dlsim::Fmap4d_t(
+                4, 
+                layer_cfg.get_N(), 
+                layer_cfg.get_C(), 
+                new_H, 
+                new_W, 
+                _IA_Tensor, 
+                0
+            );
+            _IA_slice[currIndex]->zeroInit();
+            // _IA_slice[currIndex]->print();
+            for(int k = 0; k < new_H; k++) {
+                for(int l = 0; l < new_W; l++) {
+                    int actual_H = i * new_H + k - ((layer_cfg.get_S() - 1) / 2);
+                    int actual_W = j * new_W + l - ((layer_cfg.get_R() - 1) / 2);
+                    // cout << "(k, l): ("<< k << ", " << l;
+                    // cout << ") | (actual_H, actual_W): ("<< actual_H << ", " << actual_W << ")" << endl;
+                    // check if (actual_H, actual_W is in actual range)
+                    for(int i2 = 0; i2 < layer_cfg.get_N(); i2++) {
+                        for(int j2 = 0; j2 < layer_cfg.get_C(); j2++) {
+                            if(((actual_H >= 0) && (actual_H < layer_cfg.get_H())) && ((actual_W >= 0) && (actual_W < layer_cfg.get_W()))) {
+                                _IA_slice[currIndex]->set_data(
+                                    i2, 
+                                    j2, 
+                                    k, 
+                                    l,
+                                    _IA->get_data(
+                                        i2, 
+                                        j2, 
+                                        actual_H, 
+                                        actual_W
+                                    )
+                                );
+                            }
+                            else {
+                                _IA_slice[currIndex]->set_data(
+                                    i2, 
+                                    j2, 
+                                    k, 
+                                    l, 
+                                    0.0
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            // _IA_slice[currIndex]->print();
+        }
+    }
+
+
 
 }
 
@@ -62,7 +123,7 @@ void Loader::check_IA_W_density() {
     throw runtime_error("SCNN::Loader method check_IA_W_density is not yet implemented");
 }
 
-dlsim::Fmap4d_t* Loader::IA_slice() {
+dlsim::Fmap4d_t** Loader::IA_slice() {
     return _IA_slice;
 }
 

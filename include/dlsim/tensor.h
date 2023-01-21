@@ -10,6 +10,7 @@ public:
     Tensor();
     virtual ~Tensor();
     virtual void    print() = 0;
+    char* key();
 
 protected:
     unsigned						_ndim;

@@ -58,6 +58,7 @@ protected:
     // We will use 1D array as 4D array
     T* _data;
     unsigned _sparsity;
+    unsigned _size;
 
 };
 

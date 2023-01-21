@@ -17,7 +17,7 @@ public:
     Sequencer();
     ~Sequencer();
 
-    void                init(Scnn::LayerConfig& layer_cfg, dlsim::Tensor* IA_slice, dlsim::Tensor* W);
+    void                init(Scnn::LayerConfig& layer_cfg, dlsim::Tensor** IA_slice, dlsim::Tensor* W);
     void                clean();
 
     // indicator

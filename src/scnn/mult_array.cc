@@ -42,7 +42,7 @@ MultArray::~MultArray() {
 }
 
 
-void MultArray::init(Scnn::LayerConfig& layer_cfg, dlsim::Tensor* IA_slice, dlsim::Tensor* W) {
+void MultArray::init(Scnn::LayerConfig& layer_cfg, dlsim::Tensor**, dlsim::Tensor* W) {
     throw runtime_error("SCNN::MultArray init is not yet implemented");
 }
 

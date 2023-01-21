@@ -27,7 +27,7 @@ public:
     // In the init stage, one should fill the WFIFO and IARAM
     void init(
         Scnn::LayerConfig& layer_cfg,
-        dlsim::Tensor* IA_slice,
+        dlsim::Tensor** IA_slice,
         dlsim::Tensor* W);
     void clean();
     bool fill_WFIFO_and_IARAM(

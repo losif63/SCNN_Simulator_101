@@ -233,9 +233,34 @@ Scnn::LayerConfig layerConfig1(1, 4, 16, 16, 4, 3, 3, 2);
 Scnn::Loader* loader_scnn = new Scnn::Loader(arch_config);
 loader_scnn->setup_IA_W_and_OA(loader->current_layer()->IFmap(),
     loader->current_layer()->W(), loader->current_layer()->OFmap());
-
-loader_scnn->distribute_IA_across_spatial_PEs(layerConfig1);
-test<float>(loader_scnn->IA_slice()[0].get_data(0, 0, 0, 0), 0.0f);
+loader_scnn->distribute_IA_across_spatial_PEs(layerConfig1, arch_config);
+for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
+    for(int j = 0; j < arch_config.get_pe_arr_W(); j++) {
+        bool allClear = true;
+        // cout << "current i, j: " << i << " " << j << endl;
+        dlsim::Fmap4d_t* slice = loader_scnn->IA_slice()[i * arch_config.get_pe_arr_W() + j];
+        // cout << "current i, j: " << i << " " << j << endl;
+        for(int n = 0; n < slice->dim_sz(slice->key()[0]); n++) {
+            for(int c = 0; c < slice->dim_sz(slice->key()[1]); c++) {
+                for(int h = 0; h < slice->dim_sz(slice->key()[2]); h++) {
+                    for(int w = 0; w < slice->dim_sz(slice->key()[3]); w++) {
+                        // cout << "Current nchw:" << n << " " << c << " " << h << " " << w << endl;
+                        int actual_H = i * slice->dim_sz(slice->key()[2]) + h - ((layerConfig1.get_S() - 1) / 2);
+                        int actual_W = j * slice->dim_sz(slice->key()[3]) + w - ((layerConfig1.get_R() - 1) / 2);
+                        if((actual_H >= 0) && (actual_H < layerConfig1.get_H()) && (actual_W >= 0) && (actual_W < layerConfig1.get_W())) {
+                            allClear = (allClear && (slice->get_data(n, c, h, w) == loader->current_layer()->IFmap()->get_data(n, c, actual_H, actual_W)));
+                        }
+                        else {
+                            allClear = (allClear && (slice->get_data(n, c, h, w) == 0.0));
+                        }
+                    }
+                }
+            }
+        }
+        test<bool>(allClear, true);
+    }
+}
+test<float>(loader_scnn->IA_slice()[0][0].get_data(0, 0, 0, 0), 0.0f);
 
 /**********************************************************************/
 

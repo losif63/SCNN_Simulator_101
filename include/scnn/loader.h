@@ -23,11 +23,11 @@ public:
     /* Method that brings in the IA, W, OA tensors */
   	void setup_IA_W_and_OA(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tensor* OA);
     /* Method that splits the IA tensor into smaller slices & stores them */
-	void distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg);
+	void distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg, Scnn::ArchConfig& arch_cfg);
   	void clear_IA_slice_and_W();
 	void check_IA_W_density();
 
-	dlsim::Fmap4d_t* IA_slice();              // Array of Tensor4d objects
+	dlsim::Fmap4d_t** IA_slice();              // Array of Tensor4d objects
     dlsim::Fmap4d_t* IA();
 	dlsim::Weight4d_t* W();
     dlsim::Fmap4d_t* OA();
@@ -43,7 +43,7 @@ private:
     
     // IA parameters
     tuple<int, int, int, int>* _IA_shape_per_PE; // N C H W
-    dlsim::Fmap4d_t* _IA_slice;
+    dlsim::Fmap4d_t** _IA_slice;
 };
 
 } // namespace Scnn
