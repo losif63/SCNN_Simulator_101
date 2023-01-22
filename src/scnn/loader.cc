@@ -42,6 +42,10 @@ Loader::Loader(ArchConfig& arch_cfg) {
 Loader::~Loader() {
     if(_IA_slice != NULL) {
         int size = _arch_cfg->get_pe_arr_H() * _arch_cfg->get_pe_arr_W();
+        for(int i = 0; i < size; i++) {
+            delete _IA_slice[i];
+        }
+        delete _IA_slice;
     }
     delete _arch_cfg;
 }
