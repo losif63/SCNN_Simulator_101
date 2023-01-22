@@ -233,7 +233,7 @@ Scnn::LayerConfig layerConfig1(1, 4, 16, 16, 4, 3, 3, 2);
 Scnn::Loader* loader_scnn = new Scnn::Loader(arch_config);
 loader_scnn->setup_IA_W_and_OA(loader->current_layer()->IFmap(),
     loader->current_layer()->W(), loader->current_layer()->OFmap());
-loader_scnn->distribute_IA_across_spatial_PEs(layerConfig1, arch_config);
+loader_scnn->distribute_IA_across_spatial_PEs(layerConfig1);
 for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
     for(int j = 0; j < arch_config.get_pe_arr_W(); j++) {
         bool allClear = true;

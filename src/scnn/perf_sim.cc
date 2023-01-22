@@ -104,7 +104,7 @@ PerfSim::prepare_current_layer(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
 
     // give loader pointers and distribute data across PE as IA_SLICE
     _loader->setup_IA_W_and_OA(IA, W, OA);
-    _loader->distribute_IA_across_spatial_PEs(layer_cfg, this->_arch_cfg);
+    _loader->distribute_IA_across_spatial_PEs(layer_cfg);
         
     // copy final layer-specific config to member var
     _layer_cfg = layer_cfg;

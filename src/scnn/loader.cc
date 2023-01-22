@@ -35,10 +35,14 @@ Loader::Loader(ArchConfig& arch_cfg) {
         arch_cfg.get_min_OA_H_per_PE(),
         arch_cfg.get_min_OA_W_per_PE()
     );
+    _IA_slice = NULL;
 }
 
 
 Loader::~Loader() {
+    if(_IA_slice != NULL) {
+        int size = _arch_cfg->get_pe_arr_H() * _arch_cfg->get_pe_arr_W();
+    }
     delete _arch_cfg;
 }
 
@@ -48,17 +52,17 @@ void Loader::setup_IA_W_and_OA(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
     this->_OA = (dlsim::Fmap4d_t*)OA;
 }
 
-void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg, Scnn::ArchConfig& arch_cfg) {
+void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
     // For now, we'll be doing input halo
-    unsigned W_per_PE = (layer_cfg.get_W()/arch_cfg.get_pe_arr_W()) + layer_cfg.get_R();
-    unsigned H_per_PE = (layer_cfg.get_H()/arch_cfg.get_pe_arr_H()) + layer_cfg.get_S();
+    unsigned W_per_PE = (layer_cfg.get_W()/_arch_cfg->get_pe_arr_W()) + layer_cfg.get_R();
+    unsigned H_per_PE = (layer_cfg.get_H()/_arch_cfg->get_pe_arr_H()) + layer_cfg.get_S();
 
-    _IA_slice = new dlsim::Fmap4d_t*[arch_cfg.get_pe_arr_W() * arch_cfg.get_pe_arr_H()];
-    for(int i = 0; i < arch_cfg.get_pe_arr_H(); i++) {
-        for(int j = 0; j < arch_cfg.get_pe_arr_W(); j++) {
-            int currIndex = i * arch_cfg.get_pe_arr_W() + j;
-            int new_H = ((layer_cfg.get_H() + layer_cfg.get_S() - 1) / arch_cfg.get_pe_arr_H()) + 1;
-            int new_W = ((layer_cfg.get_W() + layer_cfg.get_R() - 1) / arch_cfg.get_pe_arr_W()) + 1;
+    _IA_slice = new dlsim::Fmap4d_t*[_arch_cfg->get_pe_arr_W() * _arch_cfg->get_pe_arr_H()];
+    for(int i = 0; i < _arch_cfg->get_pe_arr_H(); i++) {
+        for(int j = 0; j < _arch_cfg->get_pe_arr_W(); j++) {
+            int currIndex = i * _arch_cfg->get_pe_arr_W() + j;
+            int new_H = ((layer_cfg.get_H() + layer_cfg.get_S() - 1) / _arch_cfg->get_pe_arr_H()) + 1;
+            int new_W = ((layer_cfg.get_W() + layer_cfg.get_R() - 1) / _arch_cfg->get_pe_arr_W()) + 1;
             _IA_slice[currIndex] = new dlsim::Fmap4d_t(
                 4, 
                 layer_cfg.get_N(), 

@@ -23,7 +23,7 @@ public:
     /* Method that brings in the IA, W, OA tensors */
   	void setup_IA_W_and_OA(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tensor* OA);
     /* Method that splits the IA tensor into smaller slices & stores them */
-	void distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg, Scnn::ArchConfig& arch_cfg);
+	void distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg);
   	void clear_IA_slice_and_W();
 	void check_IA_W_density();
 
