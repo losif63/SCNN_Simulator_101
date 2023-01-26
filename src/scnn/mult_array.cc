@@ -75,7 +75,7 @@ void MultArray::clean() {
 void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chunk_id) {
     /* Fill WFIFO */
     /* K range: (chunk_id * chunk_sz) ~ (chunk_id * chunk_sz + chunk_sz-1) */
-    unsigned index = 0;
+    int index = 0;
     W_vec_entry* Wvec = new W_vec_entry;
     /* Buffer size: C * Kc * S * R, but C is determined */
     /* Therefore, must iterate through Kc * S * R */
@@ -111,13 +111,14 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
     /* Therefore, must iterate through H * W */
     /* However, note that H and W are *tiled* for each PEs */
     while(index < slice_H * slice_W){
-        unsigned hIndex = index / slice_W;
-        unsigned wIndex = index % slice_W;
-        unsigned actualH = hIndex - _pad_h_sz + _base_offset_h_in_OA;
-        unsigned actualW = wIndex - _pad_w_sz + _base_offset_w_in_OA;
+        int hIndex = index / slice_W;
+        int wIndex = index % slice_W;
+        int actualH = hIndex - _pad_h_sz + _base_offset_h_in_OA;
+        int actualW = wIndex - _pad_w_sz + _base_offset_w_in_OA;
         if(_IA_slice->get_data(N_id, C_id, hIndex, wIndex) != 0.0) {
             IA_element ia_elem(true, _IA_slice->get_data(N_id, C_id, hIndex, wIndex), tuple<int, int, int, int>(N_id, C_id, actualH, actualW));
             IAvec->push_back(ia_elem);
+            // cout << "[" << N_id << ", " << C_id << ", " << actualH << ", " << actualW << "] inserted" << endl;
         }
         if(IAvec->size() == _arch_cfg->get_mult_arr_I()) {
             _IARAM.push_back(IAvec);

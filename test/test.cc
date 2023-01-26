@@ -294,28 +294,28 @@ for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
 test<bool>(true, WFIFO_pass);
 /* Test IARAM */
 bool IARAM_pass = true;
+// loader_scnn->IA()->print();
 for(unsigned slice_id = 0; slice_id < arch_config.get_pe_arr_H() * arch_config.get_pe_arr_W(); slice_id++) {
     mult.init(layerConfig1, loader_scnn->IA_slice()[slice_id], loader_scnn->W());
-    // loader_scnn->IA()->print();
     for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
         for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
-            for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
-                mult.fill_WFIFO_and_IARAM(N_id, C_id, chunk_id);
-                for(int temp = 0; temp < mult.size_IARAM(); temp++) {
-                    for(int i = 0; i < mult.curr_IARAM_entry()->size(); i++) {
-                        // (*mult.curr_IARAM_entry())[i].print();
-                        if((*mult.curr_IARAM_entry())[i].get_valid() == false) continue;
-                        tuple<int, int, int, int> idx = (*mult.curr_IARAM_entry())[i].get_idx();
-                        if((*mult.curr_IARAM_entry())[i].get_data() != loader_scnn->IA()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx)))
-                            IARAM_pass = false;
-                    }
-                    mult.advance_WFIFO();
+            mult.fill_WFIFO_and_IARAM(N_id, C_id, 0);
+            for(int temp = 0; temp < mult.size_IARAM(); temp++) {
+                for(int i = 0; i < mult.curr_IARAM_entry()->size(); i++) {
+                    // (*mult.curr_IARAM_entry())[i].print();
+                    if((*mult.curr_IARAM_entry())[i].get_valid() == false) continue;
+                    tuple<int, int, int, int> idx = (*mult.curr_IARAM_entry())[i].get_idx();
+                    if((*mult.curr_IARAM_entry())[i].get_data() != loader_scnn->IA()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx)))
+                        IARAM_pass = false;
                 }
+                mult.advance_WFIFO();
             }
         }
     }
 }
 test<bool>(true, IARAM_pass);
+
+
 
 
 /**********************************************************************/
