@@ -11,10 +11,10 @@ class ArchConfig{
 public:
     // ArchConfig();
     ArchConfig(
-        unsigned    _pe_arr_W,
-        unsigned    _pe_arr_H,
-        unsigned    _mult_arr_M,
-        unsigned    _mult_arr_W,
+        unsigned    pe_arr_W,
+        unsigned    pe_arr_H,
+        unsigned    mult_arr_F,
+        unsigned    mult_arr_I,
  
         // xbar io-ports 
         unsigned      xbar_in_num_phy_ch_q,
@@ -40,8 +40,8 @@ public:
     //get
     unsigned get_pe_arr_W();
     unsigned get_pe_arr_H();
-    unsigned get_mult_arr_M();
-    unsigned get_mult_arr_W();
+    unsigned get_mult_arr_F();
+    unsigned get_mult_arr_I();
 
     unsigned get_xbar_in_num_phy_ch_q();                
     unsigned get_xbar_in_num_q_entries_per_phy_ch();    
@@ -65,8 +65,8 @@ private:
     unsigned    _pe_arr_H;
 
     // multiplier array
-    unsigned    _mult_arr_M;
-    unsigned    _mult_arr_W;
+    unsigned    _mult_arr_F;
+    unsigned    _mult_arr_I;
     
     // xbar io-ports 
     unsigned    _xbar_in_num_phy_ch_q;

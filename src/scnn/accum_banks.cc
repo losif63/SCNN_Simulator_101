@@ -16,8 +16,8 @@ AccumulatorBanks::AccumulatorBanks(Scnn::ArchConfig& arch_cfg) {
     _arch_cfg = new ArchConfig(
         arch_cfg.get_pe_arr_W(),
         arch_cfg.get_pe_arr_H(),
-        arch_cfg.get_mult_arr_M(),
-        arch_cfg.get_mult_arr_W(),
+        arch_cfg.get_mult_arr_F(),
+        arch_cfg.get_mult_arr_I(),
 
         arch_cfg.get_xbar_in_num_phy_ch_q(),
         arch_cfg.get_xbar_in_num_q_entries_per_phy_ch(),

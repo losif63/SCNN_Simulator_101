@@ -64,27 +64,27 @@ OA_element::~OA_element() {}
 /* Prints all of the information of this weight element */
 void W_element::print() {
     if(!this->_valid) {
-        cout << "This weight element is not valid.\n";
+        cout << "Invalid-----------------------\n";
         return;
     }
-    else cout << "This weight element is valid.\n";
-    cout << "The value of this weight is " << this->_data << endl;
-    cout << "The index of this weight is [" << get<0>(this->_idx) 
+    else cout << "Valid----";
+    cout << "[" << get<0>(this->_idx) 
     << ", " << get<1>(this->_idx) << ", " << get<2>(this->_idx) << ", "
-    << get<3>(this->_idx) << "]" << endl;
+    << get<3>(this->_idx) << "]" << " ";
+    cout << this->_data << endl;
 }
 
 /* Prints all of the information of this IA element */
 void IA_element::print() {
     if(!this->_valid) {
-        cout << "This IA element is not valid.\n";
+        cout << "Invalid-----------------------\n";
         return;
     }
-    else cout << "This IA element is valid.\n";
-    cout << "The value of this IA element is " << this->_data << endl;
-    cout << "The index of this IA element is [" << get<0>(this->_idx) 
+    else cout << "Valid----";
+    cout << "[" << get<0>(this->_idx) 
     << ", " << get<1>(this->_idx) << ", " << get<2>(this->_idx) << ", "
-    << get<3>(this->_idx) << "]" << endl;
+    << get<3>(this->_idx) << "]" << " ";
+    cout << this->_data << endl;
 }
 
 /* Prints all of the information of this OA element */

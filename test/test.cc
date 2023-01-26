@@ -9,6 +9,7 @@
 #include "scnn/common.h"
 #include "scnn/vir_ch.h"
 #include "scnn/loader.h"
+#include "scnn/mult_array.h"
 
 using namespace std;
 
@@ -234,6 +235,8 @@ Scnn::Loader* loader_scnn = new Scnn::Loader(arch_config);
 loader_scnn->setup_IA_W_and_OA(loader->current_layer()->IFmap(),
     loader->current_layer()->W(), loader->current_layer()->OFmap());
 loader_scnn->distribute_IA_across_spatial_PEs(layerConfig1);
+/* Check for all values whether tiling of input was correctly performed. */
+/* If all values are correctly tiled, then test passed. */
 for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
     for(int j = 0; j < arch_config.get_pe_arr_W(); j++) {
         bool allClear = true;
@@ -260,11 +263,62 @@ for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
         test<bool>(allClear, true);
     }
 }
-test<float>(loader_scnn->IA_slice()[0][0].get_data(0, 0, 0, 0), 0.0f);
 
 /**********************************************************************/
+/* MultArray */
+cout << "-----------------------------------------------------------\n";
+cout << "Testing Scnn::MultArray class:" << endl; 
+
+/* Check whether the indices in the WFIFO and IARAM are correctly set */
+Scnn::MultArray mult(arch_config);
+/* Test WFIFO */
+mult.init(layerConfig1, loader_scnn->IA_slice()[0], loader_scnn->W());
+// loader_scnn->W()->print();
+bool WFIFO_pass = true;
+
+for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
+    for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
+        mult.fill_WFIFO_and_IARAM(0, C_id, chunk_id);
+        for(int temp = 0; temp < mult.size_WFIFO(); temp++) {
+            for(int i = 0; i < mult.curr_WFIFO_entry()->size(); i++) {
+                // (*mult.curr_WFIFO_entry())[i].print();
+                if((*mult.curr_WFIFO_entry())[i].get_valid() == false) continue;
+                tuple<int, int, int, int> idx = (*mult.curr_WFIFO_entry())[i].get_idx();
+                if((*mult.curr_WFIFO_entry())[i].get_data() != loader_scnn->W()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx)))
+                    WFIFO_pass = false;
+            }
+            mult.advance_WFIFO();
+        }
+    }
+}
+test<bool>(true, WFIFO_pass);
+/* Test IARAM */
+bool IARAM_pass = true;
+for(unsigned slice_id = 0; slice_id < arch_config.get_pe_arr_H() * arch_config.get_pe_arr_W(); slice_id++) {
+    mult.init(layerConfig1, loader_scnn->IA_slice()[slice_id], loader_scnn->W());
+    // loader_scnn->IA()->print();
+    for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
+        for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
+            for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
+                mult.fill_WFIFO_and_IARAM(N_id, C_id, chunk_id);
+                for(int temp = 0; temp < mult.size_IARAM(); temp++) {
+                    for(int i = 0; i < mult.curr_IARAM_entry()->size(); i++) {
+                        // (*mult.curr_IARAM_entry())[i].print();
+                        if((*mult.curr_IARAM_entry())[i].get_valid() == false) continue;
+                        tuple<int, int, int, int> idx = (*mult.curr_IARAM_entry())[i].get_idx();
+                        if((*mult.curr_IARAM_entry())[i].get_data() != loader_scnn->IA()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx)))
+                            IARAM_pass = false;
+                    }
+                    mult.advance_WFIFO();
+                }
+            }
+        }
+    }
+}
+test<bool>(true, IARAM_pass);
 
 
+/**********************************************************************/
 cout << fail_count << " out of " << total_count << " test cases failed." << endl;
 cout << succ_count << " out of " << total_count << " test cases passed." << endl;
 /**********************************************************************/

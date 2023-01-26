@@ -12,8 +12,12 @@ using namespace std;
 PerfSim::PerfSim(Scnn::ArchConfig& arch_cfg)
 :_arch_cfg(arch_cfg)
 {
+
     // initialize PE and LOADER
-    _pe = new Scnn::PE(_arch_cfg);
+    _pe = (Scnn::PE *)malloc(sizeof(Scnn::PE) * _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W());
+    for(int i = 0; i < _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W(); i++) {
+        _pe[i] = Scnn::PE(arch_cfg);
+    }
     _loader = new Scnn::Loader(_arch_cfg);
 
     // initialize cycles
@@ -22,7 +26,7 @@ PerfSim::PerfSim(Scnn::ArchConfig& arch_cfg)
 }
 
 PerfSim::~PerfSim(){
-    delete _pe;
+    free(_pe);
     delete _loader;
 };
 
@@ -104,13 +108,23 @@ PerfSim::prepare_current_layer(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
 
     // give loader pointers and distribute data across PE as IA_SLICE
     _loader->setup_IA_W_and_OA(IA, W, OA);
+    // **TodoASdw:: Fix this
     _loader->distribute_IA_across_spatial_PEs(layer_cfg);
         
     // copy final layer-specific config to member var
     _layer_cfg = layer_cfg;
 
-    // setup PE's initial status to get ready for current layer's execution 
-    _pe->prepare_current_layer(_loader->IA(), _loader->OA(), _loader->IA_slice(), _loader->W(), _layer_cfg);
+    // setup PE's initial status to get ready for current layer's execution
+    // **TodoASdw:: Fix this
+
+    for(int i = 0; i < _arch_cfg.get_pe_arr_H(); i++) {
+        for(int j = 0; j < _arch_cfg.get_pe_arr_W(); j++) {
+            unsigned currIndex = i * _arch_cfg.get_pe_arr_W() + j;
+            _pe[currIndex].prepare_current_layer(_loader->IA(), _loader->OA(), _loader->IA_slice()[currIndex], _loader->W(), _layer_cfg);
+            _pe[currIndex]._mult_array->set_pe_arr_h_idx(i);
+            _pe[currIndex]._mult_array->set_pe_arr_w_idx(j);
+        }
+    }
 };
 
 void

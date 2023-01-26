@@ -81,11 +81,15 @@ bool PE::finished_layer_exec() {
 void PE::prepare_current_layer(
     dlsim::Fmap4d_t* IA_full,
     dlsim::Fmap4d_t* OA_full,
-    dlsim::Fmap4d_t** IA_slice,
+    dlsim::Fmap4d_t* IA_slice,
     dlsim::Weight4d_t* W,
     Scnn::LayerConfig& layer_cfg
 ) {
-    throw runtime_error("SCNN::PE prepare_current_layer is not yet implemented");
+    _IA_full = IA_full;
+    _OA_full = OA_full;
+    _IA_slice = IA_slice;
+    _W = W;
+    _layer_cfg = layer_cfg;
 }
 
 void PE::cleanup_current_layer() {
@@ -116,7 +120,7 @@ Scnn::PPU* PE::get_ppu() {
     return this->_ppu;
 }
 
-dlsim::Fmap4d_t** PE::get_IA_slice() {
+dlsim::Fmap4d_t* PE::get_IA_slice() {
     return this->_IA_slice;
 }
 

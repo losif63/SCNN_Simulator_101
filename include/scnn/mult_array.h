@@ -24,14 +24,13 @@ public:
     ~MultArray();
     
     // fill
-    // In the init stage, one should fill the WFIFO and IARAM
     void init(
         Scnn::LayerConfig& layer_cfg,
-        dlsim::Tensor** IA_slice,
-        dlsim::Tensor* W);
+        dlsim::Fmap4d_t* IA_slice,
+        dlsim::Weight4d_t* W);
+    // Empty WFIFO and IARAM, probably
     void clean();
-    bool fill_WFIFO_and_IARAM(
-        dlsim::Fmap4d_t* IA_full,
+    void fill_WFIFO_and_IARAM(
         unsigned N_id, unsigned C_id,
         unsigned chunk_id);
 
@@ -61,10 +60,16 @@ public:
     bool                      is_empty_IARAM();
 
     // get
-    W_vec_entry               curr_WFIFO_entry();
-    IA_vec_entry              curr_IARAM_entry();
+    W_vec_entry*              curr_WFIFO_entry();
+    IA_vec_entry*             curr_IARAM_entry();
     bool                      end_of_WFIFO();
     bool                      end_of_IARAM();
+    unsigned                  size_WFIFO();
+    unsigned                  size_IARAM();
+
+    // set
+    void                    set_pe_arr_h_idx(int h);
+    void                    set_pe_arr_w_idx(int w);
 
     // stats
     unsigned                _c_num_of_nz_act;
@@ -81,17 +86,19 @@ private:
     Scnn::ArchConfig*     _arch_cfg;
     Scnn::LayerConfig    _layer_cfg;
 
-    deque<W_vec_entry>   _WFIFO;       
-    deque<IA_vec_entry>  _IARAM;       
+    deque<W_vec_entry*>   _WFIFO;
+    deque<IA_vec_entry*>  _IARAM;       
     
     // ptr to currently active WFIFO entry
     int   _ptr_WFIFO;
 
     // ENTIRE VALUE MAP
-    dlsim::Fmap4d_t*    _IA;
+    dlsim::Fmap4d_t*    _IA_slice;
     dlsim::Weight4d_t*  _W;
 
     // layer-specific info
+    int                     _pe_arr_h_idx;
+    int                     _pe_arr_w_idx;
     int                     _max_r;
     int                     _max_s;
     int                     _pad_h_sz;

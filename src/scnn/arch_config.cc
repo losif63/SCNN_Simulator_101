@@ -17,11 +17,11 @@ namespace Scnn
 // ArchConfig::ArchConfig() {}
 
 ArchConfig::ArchConfig(
-    unsigned    _pe_arr_W,
-    unsigned    _pe_arr_H,
+    unsigned    pe_arr_W,
+    unsigned    pe_arr_H,
 
-    unsigned    _mult_arr_M,
-    unsigned    _mult_arr_W,
+    unsigned    mult_arr_F,
+    unsigned    mult_arr_I,
 
     // xbar io-ports 
     unsigned      xbar_in_num_phy_ch_q,
@@ -41,10 +41,10 @@ ArchConfig::ArchConfig(
     unsigned      min_OA_H_per_PE,
     unsigned      min_OA_W_per_PE
 ) {
-    this->_pe_arr_W = _pe_arr_W;
-    this->_pe_arr_H = _pe_arr_H;
-    this->_mult_arr_M = _mult_arr_M;
-    this->_mult_arr_W = _mult_arr_W;
+    this->_pe_arr_W = pe_arr_W;
+    this->_pe_arr_H = pe_arr_H;
+    this->_mult_arr_F = mult_arr_F;
+    this->_mult_arr_I = mult_arr_I;
  
     this->_xbar_in_num_phy_ch_q = xbar_in_num_phy_ch_q;
     this->_xbar_in_num_q_entries_per_phy_ch 
@@ -85,13 +85,13 @@ unsigned ArchConfig::get_pe_arr_H() {
 }
 
 /* Returns _mult_arr_M of current object */
-unsigned ArchConfig::get_mult_arr_M() {
-    return this->_mult_arr_M;
+unsigned ArchConfig::get_mult_arr_F() {
+    return this->_mult_arr_F;
 }
 
 /* Returns _mult_arr_W of current object */
-unsigned ArchConfig::get_mult_arr_W() {
-    return this->_mult_arr_W;
+unsigned ArchConfig::get_mult_arr_I() {
+    return this->_mult_arr_I;
 }
 
 /* Returns _xbar_in_num_phy_ch_q of current object */

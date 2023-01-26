@@ -17,17 +17,21 @@ public:
     Sequencer();
     ~Sequencer();
 
-    void                init(Scnn::LayerConfig& layer_cfg, dlsim::Tensor** IA_slice, dlsim::Tensor* W);
+    void                init(Scnn::LayerConfig& layer_cfg, dlsim::Fmap4d_t*, dlsim::Weight4d_t* W);
     void                clean();
 
     // indicator
+    /* Working set probably refers to chunks */
     bool                advance_to_next_working_set();
+    /* Layers deal with all variables - N, C, Kc, K/Kc */
     bool                done_with_layer();
     
     // dataflow control
     void                next_N_id();
     void                next_C_id();
     void                next_chunk_id();
+    /* We must compute all possible combinations of vector F and I */
+    void                rewind_N_id();
     void                rewind_C_id();
     void                rewind_chunk_id();
 
@@ -55,6 +59,7 @@ private:
 
     // IA and W (for this PE)
     dlsim::Fmap4d_t*        _IA;
+    dlsim::Fmap4d_t*       _IA_slice;
     dlsim::Weight4d_t*      _W;
 
 };

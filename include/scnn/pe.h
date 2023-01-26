@@ -27,7 +27,7 @@ public:
 	void    prepare_current_layer(
                 dlsim::Fmap4d_t* IA_full,
                 dlsim::Fmap4d_t* OA_full,
-                dlsim::Fmap4d_t** IA_slice,
+                dlsim::Fmap4d_t* IA_slice,
                 dlsim::Weight4d_t* W,
                 Scnn::LayerConfig& layer_cfg
                 );
@@ -43,14 +43,14 @@ public:
 
     // stat
     unsigned              _c_cycle_active;
-    unsigned              _c_cycle_waiting_at_barrier;
+    unsigned              _c_cycle_waiting_at_barrier; // barrier means waiting for other PEs to complete
     unsigned              _c_cycle_finished_waiting_others;
 
     // get modules
     Scnn::MultArray*              get_mult();
 	Scnn::PPU*	                  get_ppu();
 
-    dlsim::Fmap4d_t**	          get_IA_slice();
+    dlsim::Fmap4d_t*	          get_IA_slice();
     dlsim::Weight4d_t*            get_W();
 
 private:
@@ -74,7 +74,7 @@ private:
     dlsim::Fmap4d_t*            _OA_full;
 
 	// IA and W (for this PE)
-	dlsim::Fmap4d_t**	                  _IA_slice;
+	dlsim::Fmap4d_t*	                  _IA_slice;
 	dlsim::Weight4d_t*			          _W;
 
     friend class PerfSim;

@@ -16,8 +16,19 @@ Sequencer::Sequencer() {}
 
 Sequencer::~Sequencer() {}
 
-void Sequencer::init(Scnn::LayerConfig& layer_cfg, dlsim::Tensor** IA_slice, dlsim::Tensor* W) {
-    throw runtime_error("SCNN::Sequencer init is not yet implemented");
+void Sequencer::init(Scnn::LayerConfig& layer_cfg, dlsim::Fmap4d_t* IA_slice, dlsim::Weight4d_t* W) {
+    _curr_N_id = 0;
+    _curr_C_id = 0;
+    _curr_chunk_id = 0;
+
+    _max_N_id = layer_cfg.get_N() - 1;
+    _max_C_id = layer_cfg.get_C() - 1;
+    _max_chunk_id = layer_cfg.get_K()/layer_cfg.get_chunk_sz() - 1;
+    _max_K_id = layer_cfg.get_K() - 1;
+    _chunk_sz = layer_cfg.get_chunk_sz();
+
+    this->_IA_slice = IA_slice;
+    this->_W = W;
 }
 
 void Sequencer::clean() {
@@ -34,23 +45,27 @@ bool Sequencer::done_with_layer() {
 
 // // dataflow control
 void Sequencer::next_N_id() {
-    throw runtime_error("SCNN::Sequencer next_N_id is not yet implemented");
+    _curr_N_id++;
 }
 
 void Sequencer::next_C_id() {
-    throw runtime_error("SCNN::Sequencer next_C_id is not yet implemented");
+    _curr_C_id++;
 }
 
 void Sequencer::next_chunk_id() {
-    throw runtime_error("SCNN::Sequencer next_chunk_id is not yet implemented");
+    _curr_chunk_id++;
+}
+
+void Sequencer::rewind_N_id() {
+    _curr_N_id = 0;
 }
 
 void Sequencer::rewind_C_id() {
-    throw runtime_error("SCNN::Sequencer rewind_C_id is not yet implemented");
+    _curr_C_id = 0;
 }
 
 void Sequencer::rewind_chunk_id() {
-    throw runtime_error("SCNN::Sequencer rewind_chunk_id is not yet implemented");
+    _curr_chunk_id = 0;
 }
 
 bool Sequencer::end_of_N_id() {
