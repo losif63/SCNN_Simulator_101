@@ -8,6 +8,7 @@
 #define SCNN_LOADER_CC_
 
 #include "scnn/loader.h"
+#include <math.h>
 
 namespace Scnn {
 
@@ -58,28 +59,30 @@ void Loader::setup_IA_W_and_OA(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
 
 void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
     // For now, we'll be doing input halo
-    unsigned W_per_PE = (layer_cfg.get_W()/_arch_cfg->get_pe_arr_W()) + layer_cfg.get_R();
-    unsigned H_per_PE = (layer_cfg.get_H()/_arch_cfg->get_pe_arr_H()) + layer_cfg.get_S();
+    int new_H = (int)ceil(((float)layer_cfg.get_H() / (float)_arch_cfg->get_pe_arr_H()));
+    int new_W = (int)ceil(((float)layer_cfg.get_W() / (float)_arch_cfg->get_pe_arr_W()));
+    // int new_H = ((layer_cfg.get_H() + layer_cfg.get_S() - 1) / _arch_cfg->get_pe_arr_H()) + 1;
+    // int new_W = ((layer_cfg.get_W() + layer_cfg.get_R() - 1) / _arch_cfg->get_pe_arr_W()) + 1;
+    unsigned H_per_PE = new_H + layer_cfg.get_S() - 1;
+    unsigned W_per_PE = new_W + layer_cfg.get_R() - 1;
 
     _IA_slice = new dlsim::Fmap4d_t*[_arch_cfg->get_pe_arr_W() * _arch_cfg->get_pe_arr_H()];
     for(int i = 0; i < _arch_cfg->get_pe_arr_H(); i++) {
         for(int j = 0; j < _arch_cfg->get_pe_arr_W(); j++) {
             int currIndex = i * _arch_cfg->get_pe_arr_W() + j;
-            int new_H = ((layer_cfg.get_H() + layer_cfg.get_S() - 1) / _arch_cfg->get_pe_arr_H()) + 1;
-            int new_W = ((layer_cfg.get_W() + layer_cfg.get_R() - 1) / _arch_cfg->get_pe_arr_W()) + 1;
             _IA_slice[currIndex] = new dlsim::Fmap4d_t(
                 4, 
                 layer_cfg.get_N(), 
                 layer_cfg.get_C(), 
-                new_H, 
-                new_W, 
+                H_per_PE, 
+                W_per_PE, 
                 _IA_Tensor, 
                 0
             );
             _IA_slice[currIndex]->zeroInit();
             // _IA_slice[currIndex]->print();
-            for(int k = 0; k < new_H; k++) {
-                for(int l = 0; l < new_W; l++) {
+            for(int k = 0; k < H_per_PE; k++) {
+                for(int l = 0; l < W_per_PE; l++) {
                     int actual_H = i * new_H + k - ((layer_cfg.get_S() - 1) / 2);
                     int actual_W = j * new_W + l - ((layer_cfg.get_R() - 1) / 2);
                     // cout << "(k, l): ("<< k << ", " << l;

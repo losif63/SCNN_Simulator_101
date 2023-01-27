@@ -1,6 +1,6 @@
 #include <iostream>
 #include <random>
-
+#include <math.h>
 
 #include "dlsim/common.h"
 #include "dlsim/fmap_4d.h"
@@ -237,6 +237,8 @@ loader_scnn->setup_IA_W_and_OA(loader->current_layer()->IFmap(),
 loader_scnn->distribute_IA_across_spatial_PEs(layerConfig1);
 /* Check for all values whether tiling of input was correctly performed. */
 /* If all values are correctly tiled, then test passed. */
+int new_H = (int)ceil(((float)layerConfig1.get_H() / (float)arch_config.get_pe_arr_H()));
+int new_W = (int)ceil(((float)layerConfig1.get_W() / (float)arch_config.get_pe_arr_W()));
 for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
     for(int j = 0; j < arch_config.get_pe_arr_W(); j++) {
         bool allClear = true;
@@ -248,12 +250,19 @@ for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
                 for(int h = 0; h < slice->dim_sz(slice->key()[2]); h++) {
                     for(int w = 0; w < slice->dim_sz(slice->key()[3]); w++) {
                         // cout << "Current nchw:" << n << " " << c << " " << h << " " << w << endl;
-                        int actual_H = i * slice->dim_sz(slice->key()[2]) + h - ((layerConfig1.get_S() - 1) / 2);
-                        int actual_W = j * slice->dim_sz(slice->key()[3]) + w - ((layerConfig1.get_R() - 1) / 2);
+                        int actual_H = i * new_H + h - ((layerConfig1.get_S() - 1) / 2);
+                        int actual_W = j * new_W + w - ((layerConfig1.get_R() - 1) / 2);
                         if((actual_H >= 0) && (actual_H < layerConfig1.get_H()) && (actual_W >= 0) && (actual_W < layerConfig1.get_W())) {
-                            allClear = (allClear && (slice->get_data(n, c, h, w) == loader->current_layer()->IFmap()->get_data(n, c, actual_H, actual_W)));
+                            if(slice->get_data(n, c, h, w) != loader->current_layer()->IFmap()->get_data(n, c, actual_H, actual_W)) {
+                                allClear = false;
+                                cout << "ERROR CODE 1012: " << slice->get_data(n, c, h, w) << ", " << loader->current_layer()->IFmap()->get_data(n, c, actual_H, actual_W) << endl;
+                            }
                         }
                         else {
+                            if(slice->get_data(n, c, h, w) != 0.0) {
+                                allClear = false;
+                                cout << "ERROR CODE 1013: " << slice->get_data(n, c, h, w) << endl;
+                            }
                             allClear = (allClear && (slice->get_data(n, c, h, w) == 0.0));
                         }
                     }
@@ -286,7 +295,7 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
                 int size = mult.size_WFIFO();
                 for(int temp = 0; temp < size; temp++) {
                     for(int i = 0; i < mult.curr_WFIFO_entry()->size(); i++) {
-                        (*mult.curr_WFIFO_entry())[i].print();
+                        // (*mult.curr_WFIFO_entry())[i].print();
                         if((*mult.curr_WFIFO_entry())[i].get_valid() == false) continue;
                         tuple<int, int, int, int> idx = (*mult.curr_WFIFO_entry())[i].get_idx();
                         if((*mult.curr_WFIFO_entry())[i].get_data() != loader_scnn->W()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx))) {
@@ -306,13 +315,14 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
         // loader_scnn->IA()->print();
         for(unsigned slice_id = 0; slice_id < arch_config.get_pe_arr_H() * arch_config.get_pe_arr_W(); slice_id++) {
             mult.init(layerConfig1, loader_scnn->IA_slice()[slice_id], loader_scnn->W());
+            loader_scnn->IA_slice()[slice_id]->print();
             for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
                 for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
                     mult.fill_WFIFO_and_IARAM(N_id, C_id, 0);
                     int size = mult.size_IARAM();
                     for(int temp = 0; temp < size; temp++) {
                         for(int i = 0; i < mult.curr_IARAM_entry()->size(); i++) {
-                            (*mult.curr_IARAM_entry())[i].print();
+                            // (*mult.curr_IARAM_entry())[i].print();
                             if((*mult.curr_IARAM_entry())[i].get_valid() == false) continue;
                             tuple<int, int, int, int> idx = (*mult.curr_IARAM_entry())[i].get_idx();
                             if((*mult.curr_IARAM_entry())[i].get_data() != loader_scnn->IA()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx))) {
