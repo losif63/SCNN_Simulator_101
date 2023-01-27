@@ -283,7 +283,8 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
         for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
             for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
                 mult.fill_WFIFO_and_IARAM(0, C_id, chunk_id);
-                for(int temp = 0; temp < mult.size_WFIFO(); temp++) {
+                int size = mult.size_WFIFO();
+                for(int temp = 0; temp < size; temp++) {
                     for(int i = 0; i < mult.curr_WFIFO_entry()->size(); i++) {
                         (*mult.curr_WFIFO_entry())[i].print();
                         if((*mult.curr_WFIFO_entry())[i].get_valid() == false) continue;
@@ -296,6 +297,7 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
                     }
                     mult.advance_WFIFO();
                 }
+                mult.clear_both_WFIFO_and_IARAM();
             }
         }
         test<bool>(true, WFIFO_pass);
@@ -307,7 +309,8 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
             for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
                 for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
                     mult.fill_WFIFO_and_IARAM(N_id, C_id, 0);
-                    for(int temp = 0; temp < mult.size_IARAM(); temp++) {
+                    int size = mult.size_IARAM();
+                    for(int temp = 0; temp < size; temp++) {
                         for(int i = 0; i < mult.curr_IARAM_entry()->size(); i++) {
                             (*mult.curr_IARAM_entry())[i].print();
                             if((*mult.curr_IARAM_entry())[i].get_valid() == false) continue;
@@ -317,8 +320,10 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
                                 cout << "ERROR DETECTED IN IARAM!!!!" << endl;
                             }
                         }
-                        mult.advance_WFIFO();
+                        cout << "EOL ASDF" << endl;
+                        mult.advance_IARAM();
                     }
+                    mult.clear_both_WFIFO_and_IARAM();
                 }
             }
         }
