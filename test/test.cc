@@ -281,6 +281,7 @@ cout << "Testing Scnn::MultArray class:" << endl;
 /* Check whether the indices in the WFIFO and IARAM are correctly set */
 for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
     for(int pe_w = 0; pe_w < arch_config.get_pe_arr_W(); pe_w++) {
+        // cout << "PE Number: (h, w) = " << pe_h << ", " << pe_w << endl;
         Scnn::MultArray mult(arch_config);
         mult.set_pe_arr_h_idx(pe_h);
         mult.set_pe_arr_w_idx(pe_w);
@@ -313,30 +314,28 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
         /* Test IARAM */
         bool IARAM_pass = true;
         // loader_scnn->IA()->print();
-        for(unsigned slice_id = 0; slice_id < arch_config.get_pe_arr_H() * arch_config.get_pe_arr_W(); slice_id++) {
-            mult.init(layerConfig1, loader_scnn->IA_slice()[slice_id], loader_scnn->W());
-            loader_scnn->IA_slice()[slice_id]->print();
-            for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
-                for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
-                    mult.fill_WFIFO_and_IARAM(N_id, C_id, 0);
-                    int size = mult.size_IARAM();
-                    for(int temp = 0; temp < size; temp++) {
-                        for(int i = 0; i < mult.curr_IARAM_entry()->size(); i++) {
-                            // (*mult.curr_IARAM_entry())[i].print();
-                            if((*mult.curr_IARAM_entry())[i].get_valid() == false) continue;
-                            tuple<int, int, int, int> idx = (*mult.curr_IARAM_entry())[i].get_idx();
-                            if((*mult.curr_IARAM_entry())[i].get_data() != loader_scnn->IA()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx))) {
-                                IARAM_pass = false;
-                                cout << "ERROR DETECTED IN IARAM!!!!" << endl;
-                            }
+        int slice_id = pe_h * arch_config.get_pe_arr_W() + pe_w;
+        mult.init(layerConfig1, loader_scnn->IA_slice()[slice_id], loader_scnn->W());
+        // loader_scnn->IA_slice()[slice_id]->print();
+        for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
+            for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
+                mult.fill_WFIFO_and_IARAM(N_id, C_id, 0);
+                int size = mult.size_IARAM();
+                for(int temp = 0; temp < size; temp++) {
+                    for(int i = 0; i < mult.curr_IARAM_entry()->size(); i++) {
+                        // (*mult.curr_IARAM_entry())[i].print();
+                        if((*mult.curr_IARAM_entry())[i].get_valid() == false) continue;
+                        tuple<int, int, int, int> idx = (*mult.curr_IARAM_entry())[i].get_idx();
+                        if((*mult.curr_IARAM_entry())[i].get_data() != loader_scnn->IA()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx))) {
+                            IARAM_pass = false;
+                            cout << "ERROR DETECTED IN IARAM!!!!" << endl;
                         }
-                        cout << "EOL ASDF" << endl;
-                        mult.advance_IARAM();
                     }
-                    mult.clear_both_WFIFO_and_IARAM();
+                    mult.advance_IARAM();
                 }
+                mult.clear_both_WFIFO_and_IARAM();
             }
-        }
+        }  
         test<bool>(true, IARAM_pass);
     }
 }

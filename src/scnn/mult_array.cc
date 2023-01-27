@@ -118,7 +118,7 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
         if(_IA_slice->get_data(N_id, C_id, hIndex, wIndex) != 0.0) {
             IA_element ia_elem(true, _IA_slice->get_data(N_id, C_id, hIndex, wIndex), tuple<int, int, int, int>(N_id, C_id, actualH, actualW));
             IAvec->push_back(ia_elem);
-            // cout << "[" << N_id << ", " << C_id << ", " << actualH << ", " << actualW << "] inserted" << endl;
+            // cout << "[" << N_id << ", " << C_id << ", " << actualH << ", " << actualW << "] " << _IA_slice->get_data(N_id, C_id, hIndex, wIndex) << " inserted" << endl;
         }
         if(IAvec->size() == _arch_cfg->get_mult_arr_I()) {
             _IARAM.push_back(IAvec);
