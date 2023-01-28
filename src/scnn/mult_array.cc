@@ -133,6 +133,11 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
         }
         _IARAM.push_back(IAvec);
     }
+
+    _curr_WFIFO_size = _WFIFO.size();
+    _curr_IARAM_size = _IARAM.size();
+    _c_WFIFO_advance = 0;
+    _c_IARAM_advance = 0;
 }
 
 void MultArray::check_IA_slice_sanity(dlsim::Fmap4d_t* IA_full, unsigned N_id, unsigned C_id) {
@@ -149,35 +154,68 @@ bool MultArray::idle() {
 }
 
 bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
-    throw runtime_error("SCNN::MultArray compute_mul_array_output is not yet implemented");
+    W_vec_entry* wvec = curr_WFIFO_entry();
+    IA_vec_entry* iavec = curr_IARAM_entry();
+
+    for(int i = 0; i < wvec->size(); i++) {
+        for(int j = 0; j < iavec->size(); j++) {
+            tuple<int, int, int, int> oa_idx = tuple<int, int, int, int>(
+                get<0>((*iavec)[j].get_idx()),
+                get<1>((*wvec)[i].get_idx()),
+                0,  // TODO: fix
+                0   // TODO: fix
+            );
+            OA_element oa_elem(
+                (*wvec)[i].get_valid() && (*iavec)[j].get_valid(),
+                (*wvec)[i].get_data() * (*iavec)[j].get_data(),
+                oa_idx,
+                get<0>(OA_idx_to_bank_addr(oa_idx)),
+                get<1>(OA_idx_to_bank_addr(oa_idx))
+            );
+            
+            int port_in_id = i * iavec->size() + j;
+            xbar->port_in()->receive(oa_elem, port_in_id);
+        }
+    }
 }
 
+/* Method that generates an "accumulator address" from output index */
 int MultArray::accum_addr_in_1d(tensor_4D_idx oa_idx) {
     throw runtime_error("SCNN::MultArray accum_addr_in_1d is not yet implemented");
+    // TODO
 }
-
+/* Method that generates bank id from an "accumulator address" */
 unsigned MultArray::accum_addr_to_bank_id(unsigned mode, int accum_addr, unsigned num_accum_banks) {
     throw runtime_error("SCNN::MultArray accum_addr_to_bank_id is not yet implemented");
+    // TODO
 }
 
+/* Method that generates bank index from an "accumulator address" */
 unsigned MultArray::idx_in_bank(unsigned mode, int accum_addr, unsigned num_accum_banks) {
     throw runtime_error("SCNN::MultArray idx_in_bank is not yet implemented");
+    // TODO
 }
 
+/* Method that geneartes bank id * index from output index */
 tuple<unsigned,unsigned> MultArray::OA_idx_to_bank_addr(tensor_4D_idx oa_idx) {
-    throw runtime_error("SCNN::MultArray OA_idx_to_bank_addr is not yet implemented");
+    int accum_addr = accum_addr_in_1d(oa_idx);
+    unsigned bank_id = accum_addr_to_bank_id(0, accum_addr, _arch_cfg->get_xbar_out());
+    unsigned bank_idx = idx_in_bank(0, accum_addr, _arch_cfg->get_xbar_out());
+    return tuple<unsigned, unsigned>(bank_id, bank_idx);
 }
 
 void MultArray::advance_WFIFO() {
     vector<Scnn::W_element>* wvec = _WFIFO.front();
     _WFIFO.pop_front();
     _WFIFO.push_back(wvec);
+    _c_WFIFO_advance++;
 }
 
 void MultArray::advance_IARAM() {
     vector<Scnn::IA_element>* iavec = _IARAM.front();
     _IARAM.pop_front();
     _IARAM.push_back(iavec);
+    _c_IARAM_advance++;
 }
 
 void MultArray::advance_to_next_mul_op() {
@@ -193,6 +231,10 @@ void MultArray::clear_both_WFIFO_and_IARAM(){
         delete(_IARAM.front());
         _IARAM.pop_front();
     }
+    _curr_WFIFO_size = 0;
+    _curr_IARAM_size = 0;
+    _c_WFIFO_advance = 0;
+    _c_IARAM_advance = 0;
 }
 
 // helper functions
@@ -214,19 +256,19 @@ IA_vec_entry* MultArray::curr_IARAM_entry() {
 }    
 
 bool MultArray::end_of_WFIFO() {
-    throw runtime_error("SCNN::MultArray end_of_WFIFO is not yet implemented");
+    return (_c_WFIFO_advance > 0) && (_c_WFIFO_advance % _curr_WFIFO_size == 0);
 }
 
 bool MultArray::end_of_IARAM() {
-    throw runtime_error("SCNN::MultArray end_of_IARAM is not yet implemented");
+    return (_c_IARAM_advance > 0) && (_c_IARAM_advance % _curr_IARAM_size == 0);
 }
 
 unsigned MultArray::size_WFIFO() {
-    return _WFIFO.size();
+    return _curr_WFIFO_size;
 }
 
 unsigned MultArray::size_IARAM() {
-    return _IARAM.size();
+    return _curr_IARAM_size;
 }
 
 void MultArray::set_pe_arr_h_idx(int h) {

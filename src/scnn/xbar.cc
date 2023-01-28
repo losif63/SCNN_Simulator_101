@@ -41,13 +41,18 @@ Xbar::Xbar(Scnn::ArchConfig& arch_cfg) {
     _c_inputs_fwded_to_output = 0;
     _c_cycles_active = 0;
 
-    _port_in = new VirtualChannel<OA_element>[_num_port_in];
-    _port_out = new VirtualChannel<OA_element>[_num_port_out];
+    _port_in = new VirtualChannel<OA_element>;
+    _port_out = new VirtualChannel<OA_element>;
+    
+    _port_in->init(_num_port_in, 1);
+    _port_out->init(_num_port_out, 1);
     
 }
 
 Xbar::~Xbar() {
     delete _arch_cfg;
+    delete _port_in;
+    delete _port_out;
 }
 
 void Xbar::cycle() {

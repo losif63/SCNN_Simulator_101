@@ -117,7 +117,8 @@ unsigned VirtualChannel<T>::num_q_entries_per_phy_ch() {
 }
 
 template class VirtualChannel<int>;
-// template class VirtualChannel<float>;
+template class VirtualChannel<float>;
+template class VirtualChannel<OA_element>;
 
 /**********************************************************************/
 }

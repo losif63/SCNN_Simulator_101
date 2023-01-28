@@ -40,12 +40,16 @@ int main (int argc, char** argv){
         
     // x-bar -> crossbar
     unsigned    xbar_in = mult_arr_F * mult_arr_I; 
+    // Use this number to modify accumulator buffer number
     unsigned    xbar_scale_out_ratio  = 1;
     unsigned    xbar_out  = xbar_in*(xbar_scale_out_ratio);
         
     // q --> queue?
+    // Queue that comes before accum buffers
     unsigned    xbar_in_num_phy_ch_q  = xbar_out;
+    // This is the "depth" of the queue
     unsigned    xbar_in_num_q_entries_per_phy_ch = 1;
+    // Not sure what this is fore, probably wouldn't be using them
     unsigned    xbar_out_num_phy_ch_q  = 1;
     unsigned    xbar_out_num_q_entries_per_phy_ch = 2;
         

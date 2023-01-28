@@ -77,6 +77,10 @@ public:
     unsigned                _c_multiply_ops_completed;
 	unsigned				_c_cycles_drained_mularray_output;
 	unsigned				_c_cycles_stalled_due_to_xbar_in_full;
+    unsigned                _c_WFIFO_advance;
+    unsigned                _c_IARAM_advance;
+    unsigned                _curr_WFIFO_size;
+    unsigned                _curr_IARAM_size;
 
     unsigned                _c_num_output_accumu_hazards[NUM_ACCUM_HAZARD_BINS];
     unsigned                _c_num_output_accumu_to_same_bank[NUM_ACCUM_BANKS_BINS];

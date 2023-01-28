@@ -13,6 +13,7 @@
 #include "dlsim/common.h"
 
 #include "scnn/common.h"
+#include "scnn/data_element.h"
 
 namespace Scnn
 {
