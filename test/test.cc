@@ -274,6 +274,14 @@ for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
 }
 
 /**********************************************************************/
+/* Xbar */
+cout << "-----------------------------------------------------------\n";
+cout << "Testing Scnn::Xbar class:" << endl; 
+
+Scnn::Xbar xbar(arch_config);
+
+
+/**********************************************************************/
 /* MultArray */
 cout << "-----------------------------------------------------------\n";
 cout << "Testing Scnn::MultArray class:" << endl; 
@@ -337,16 +345,23 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
             }
         }  
         test<bool>(true, IARAM_pass);
+
+        for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
+            for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
+                for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
+                    mult.fill_WFIFO_and_IARAM(N_id, C_id, chunk_id);
+                    while(mult.end_of_mult() == false) {
+                        mult.compute_mul_array_output(&xbar);
+                        mult.advance_to_next_mul_op();
+                        xbar.clean();
+                    }
+                }
+            }
+        }
     }
 }
 
 /* TODO: Test multiplication after implementing Xbar */
-
-/**********************************************************************/
-/* Xbar */
-cout << "-----------------------------------------------------------\n";
-cout << "Testing Scnn::Xbar class:" << endl; 
-
 
 
 /**********************************************************************/

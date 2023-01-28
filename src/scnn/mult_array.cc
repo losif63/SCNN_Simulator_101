@@ -136,8 +136,8 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
 
     _curr_WFIFO_size = _WFIFO.size();
     _curr_IARAM_size = _IARAM.size();
-    _c_WFIFO_advance = 0;
-    _c_IARAM_advance = 0;
+    _c_WFIFO_advance = 1;
+    _c_IARAM_advance = 1;
 }
 
 void MultArray::check_IA_slice_sanity(dlsim::Fmap4d_t* IA_full, unsigned N_id, unsigned C_id) {
@@ -159,11 +159,27 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
 
     for(int i = 0; i < wvec->size(); i++) {
         for(int j = 0; j < iavec->size(); j++) {
+            // If the C values do not match, insert dummy OA and continue
+            // These invalid OA_elements will be eliminated in xbar
+            if(get<1>((*wvec)[i].get_idx()) != get<1>((*iavec)[j].get_idx())) {
+                OA_element oa_elem(
+                    false,
+                    0.0,
+                    tuple<int, int, int, int>(-1, -1, -1, -1),
+                    -1,
+                    -1
+                );
+                int port_in_id = i * iavec->size() + j;
+                xbar->port_in()->receive(oa_elem, port_in_id);
+                continue;
+            }
+            int y_displacement = (_layer_cfg.get_S()-1)/2 - get<2>((*wvec)[i].get_idx());
+            int x_displacement = (_layer_cfg.get_R()-1)/2 - get<3>((*wvec)[i].get_idx());
             tuple<int, int, int, int> oa_idx = tuple<int, int, int, int>(
                 get<0>((*iavec)[j].get_idx()),
                 get<1>((*wvec)[i].get_idx()),
-                0,  // TODO: fix
-                0   // TODO: fix
+                get<2>((*iavec)[j].get_idx()) + y_displacement,
+                get<3>((*iavec)[j].get_idx()) + x_displacement
             );
             OA_element oa_elem(
                 (*wvec)[i].get_valid() && (*iavec)[j].get_valid(),
@@ -172,7 +188,12 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
                 get<0>(OA_idx_to_bank_addr(oa_idx)),
                 get<1>(OA_idx_to_bank_addr(oa_idx))
             );
-            
+            cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+            (*iavec)[j].print();
+            (*wvec)[i].print();
+            oa_elem.print();
+            cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+
             int port_in_id = i * iavec->size() + j;
             xbar->port_in()->receive(oa_elem, port_in_id);
         }
@@ -181,19 +202,30 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
 
 /* Method that generates an "accumulator address" from output index */
 int MultArray::accum_addr_in_1d(tensor_4D_idx oa_idx) {
-    throw runtime_error("SCNN::MultArray accum_addr_in_1d is not yet implemented");
-    // TODO
+    unsigned chunk_size = _layer_cfg.get_chunk_sz();
+    unsigned pe_h = _IA_slice->dim_sz('H');
+    unsigned pe_w = _IA_slice->dim_sz('W');
+
+    unsigned hash_k = get<1>(oa_idx) % chunk_size;
+    unsigned hash_h = get<2>(oa_idx) % pe_h;
+    unsigned hash_w = get<3>(oa_idx) % pe_w;
+
+    unsigned hash = 0;
+    hash += get<0>(oa_idx) * chunk_size * pe_h * pe_w;
+    hash += hash_k * pe_h * pe_w;
+    hash += hash_h * pe_w;
+    hash += hash_w;
+
+    return hash;
 }
 /* Method that generates bank id from an "accumulator address" */
 unsigned MultArray::accum_addr_to_bank_id(unsigned mode, int accum_addr, unsigned num_accum_banks) {
-    throw runtime_error("SCNN::MultArray accum_addr_to_bank_id is not yet implemented");
-    // TODO
+    return (accum_addr % num_accum_banks);
 }
 
 /* Method that generates bank index from an "accumulator address" */
 unsigned MultArray::idx_in_bank(unsigned mode, int accum_addr, unsigned num_accum_banks) {
-    throw runtime_error("SCNN::MultArray idx_in_bank is not yet implemented");
-    // TODO
+    return (accum_addr / num_accum_banks);
 }
 
 /* Method that geneartes bank id * index from output index */
@@ -218,8 +250,15 @@ void MultArray::advance_IARAM() {
     _c_IARAM_advance++;
 }
 
+
 void MultArray::advance_to_next_mul_op() {
-    throw runtime_error("SCNN::MultArray advance_to_next_mul_op is not yet implemented");
+    /*
+    * We need to multiply all IARAM vectors with all WFIFO vectors
+    * To do so, we first advance IARAM only
+    * After completing an IARAM cycle, advance WFIFO and repeat
+    */
+    if(end_of_IARAM()) advance_WFIFO();
+    advance_IARAM();
 }
 
 void MultArray::clear_both_WFIFO_and_IARAM(){
@@ -256,11 +295,15 @@ IA_vec_entry* MultArray::curr_IARAM_entry() {
 }    
 
 bool MultArray::end_of_WFIFO() {
-    return (_c_WFIFO_advance > 0) && (_c_WFIFO_advance % _curr_WFIFO_size == 0);
+    return ((_c_WFIFO_advance % _curr_WFIFO_size) == 0);
 }
 
 bool MultArray::end_of_IARAM() {
-    return (_c_IARAM_advance > 0) && (_c_IARAM_advance % _curr_IARAM_size == 0);
+    return ((_c_IARAM_advance % _curr_IARAM_size) == 0);
+}
+
+bool MultArray::end_of_mult() {
+    return ((_c_IARAM_advance % (_curr_WFIFO_size * _curr_IARAM_size)) == 0);
 }
 
 unsigned MultArray::size_WFIFO() {

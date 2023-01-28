@@ -64,6 +64,7 @@ public:
     IA_vec_entry*             curr_IARAM_entry();
     bool                      end_of_WFIFO();
     bool                      end_of_IARAM();
+    bool                      end_of_mult();
     unsigned                  size_WFIFO();
     unsigned                  size_IARAM();
 

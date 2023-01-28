@@ -90,18 +90,16 @@ void IA_element::print() {
 /* Prints all of the information of this OA element */
 void OA_element::print() {
     if(!this->_valid) {
-        cout << "This OA element is not valid.\n";
+        cout << "Invalid-----------------------\n";
         return;
     }
-    else cout << "This OA element is valid.\n";
-    cout << "The value of this OA element is " << this->_data << endl;
-    cout << "The index of this OA element is [" << get<0>(this->_idx) 
+    else cout << "Valid----";
+    cout << "[" << get<0>(this->_idx) 
     << ", " << get<1>(this->_idx) << ", " << get<2>(this->_idx) << ", "
-    << get<3>(this->_idx) << "]" << endl;
-    cout << "The bank ID of this OA element is " << this->_bank_id 
-    << endl;
-    cout << "The index ID in the bank of this OA element is " 
-    << this->_idx_in_bank << endl;
+    << get<3>(this->_idx) << "]" << " ";
+    cout << this->_data << " ------ ";
+    cout << this->_bank_id << ", ";
+    cout << this->_idx_in_bank << endl;
 }
 
 /* Public getter method for _valid of W_element */

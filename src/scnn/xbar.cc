@@ -51,8 +51,8 @@ Xbar::Xbar(Scnn::ArchConfig& arch_cfg) {
 
 Xbar::~Xbar() {
     delete _arch_cfg;
-    delete _port_in;
-    delete _port_out;
+    // delete _port_in;
+    // delete _port_out;
 }
 
 void Xbar::cycle() {
@@ -64,7 +64,13 @@ bool Xbar::idle() {
 }
 
 void Xbar::clean() {
-    throw runtime_error("SCNN::Xbar clean is not yet implemented");
+    for(int i = 0; i < _num_port_in; i++) {
+        while(_port_in->canDrain(i)) _port_in->drain(i);
+    }
+
+    for(int i = 0; i < _num_port_out; i++) {
+        while(_port_out->canDrain(i)) _port_out->drain(i);
+    }
 }
 
 int Xbar::arbitrate_port_in_to_drain_from(unsigned port_out_id) {
