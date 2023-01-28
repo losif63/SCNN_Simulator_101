@@ -47,6 +47,7 @@ private:
 
     OA_element***                   _banks;
 
+    /* Array of bool values, indicating emptiness of banks? */
     bool*                           _empty;
 };
     

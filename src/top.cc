@@ -35,11 +35,11 @@ int main (int argc, char** argv){
     unsigned    pe_arr_H = 4;
 
     // pe & mult_array -> Multiplier Array
-    unsigned    mult_arr_M = 4;
-    unsigned    mult_arr_W = 4;
+    unsigned    mult_arr_F = 4;
+    unsigned    mult_arr_I = 4;
         
     // x-bar -> crossbar
-    unsigned    xbar_in = mult_arr_M * mult_arr_W; 
+    unsigned    xbar_in = mult_arr_F * mult_arr_I; 
     unsigned    xbar_scale_out_ratio  = 1;
     unsigned    xbar_out  = xbar_in*(xbar_scale_out_ratio);
         
@@ -120,8 +120,8 @@ int main (int argc, char** argv){
         pe_arr_H,
 
         // mult array            
-        mult_arr_M, 
-        mult_arr_W, 
+        mult_arr_F, 
+        mult_arr_I, 
 
         //xbar
         xbar_in_num_phy_ch_q, 

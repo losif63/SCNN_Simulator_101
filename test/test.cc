@@ -340,6 +340,12 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
     }
 }
 
+/* TODO: Test multiplication after implementing Xbar */
+
+/**********************************************************************/
+/* Xbar */
+cout << "-----------------------------------------------------------\n";
+cout << "Testing Scnn::Xbar class:" << endl; 
 
 
 

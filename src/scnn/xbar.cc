@@ -35,6 +35,15 @@ Xbar::Xbar(Scnn::ArchConfig& arch_cfg) {
         arch_cfg.get_min_OA_H_per_PE(),
         arch_cfg.get_min_OA_W_per_PE()
     );
+    
+    _num_port_in = arch_cfg.get_xbar_in();
+    _num_port_out = arch_cfg.get_xbar_out();
+    _c_inputs_fwded_to_output = 0;
+    _c_cycles_active = 0;
+
+    _port_in = new VirtualChannel<OA_element>[_num_port_in];
+    _port_out = new VirtualChannel<OA_element>[_num_port_out];
+    
 }
 
 Xbar::~Xbar() {
