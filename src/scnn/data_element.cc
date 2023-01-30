@@ -102,7 +102,9 @@ void OA_element::print() {
     << get<3>(this->_idx) << "]" << " ";
     cout << this->_data << " ------ ";
     cout << this->_bank_id << ", ";
-    cout << this->_idx_in_bank << endl;
+    cout << this->_idx_in_bank << ", ";
+    if(_init == false) cout << "noInit" << endl;
+    else cout << "YesInit" << endl;
 }
 
 /* Public getter method for _valid of W_element */

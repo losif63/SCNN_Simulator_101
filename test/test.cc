@@ -356,21 +356,22 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
             }
         }  
         test<bool>(true, IARAM_pass);
-
-        for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
-            for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
-                for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
-                    // cout << "Testing for N_id, C_id, chunk_id: " << N_id << ", " << C_id << ", " << chunk_id << endl;
-                    mult.fill_WFIFO_and_IARAM(N_id, C_id, chunk_id);
-                    while((mult.idle() == false) || (xbar.idle() == false) || (accum_bank.idle(&xbar) == false)) {
-                        accum_bank.cycle(&xbar, loader->current_layer()->OFmap(), false);
-                        xbar.cycle();
-                        mult.cycle(&xbar);
-                    }
-                    accum_bank.cycle(&xbar, loader->current_layer()->OFmap(), true);
-                    mult.clear_both_WFIFO_and_IARAM();
+        for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
+            for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
+                for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
+                    // for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
+                        // cout << "Testing for N_id, C_id, chunk_id: " << N_id << ", " << C_id << ", " << chunk_id << endl;
+                        mult.fill_WFIFO_and_IARAM(N_id, C_id, chunk_id);
+                        while((mult.idle() == false) || (xbar.idle() == false) || (accum_bank.idle(&xbar) == false)) {
+                            accum_bank.cycle(&xbar, loader->current_layer()->OFmap(), false);
+                            xbar.cycle();
+                            mult.cycle(&xbar);
+                        }
+                        mult.clear_both_WFIFO_and_IARAM();
+                    // }
                 }
             }
+            accum_bank.cycle(&xbar, loader->current_layer()->OFmap(), true);
         }
         // loader->current_layer()->OFmap()->print();
     }
@@ -394,9 +395,9 @@ for(int n= 0; n < layerConfig1.get_N(); n++) {
                             float weightValue = loader->current_layer()->W()->get_data(k, c, s, r);
                             float valueToAdd = inputValue * weightValue;
                             golden_output.set_data(n, k, h, w, currValue + valueToAdd);
-                            cout << "Input [" << n << ", " << c << ", " << inputH << ", " << inputW << ", " << inputValue << "] | ";
-                            cout << "Weight [" << k << ", " << c << ", " << s << ", " << r << ", " << weightValue << "] | ";
-                            cout << "GOLDEN:: Partial Sum [" << n << ", " << k << ", " << h << ", " << w << ", " << valueToAdd << "]" << endl;
+                            // cout << "Input [" << n << ", " << c << ", " << inputH << ", " << inputW << ", " << inputValue << "] | ";
+                            // cout << "Weight [" << k << ", " << c << ", " << s << ", " << r << ", " << weightValue << "] | ";
+                            // cout << "GOLDEN:: Partial Sum [" << n << ", " << k << ", " << h << ", " << w << ", " << valueToAdd << "]" << endl;
                         }
                     }
                 }

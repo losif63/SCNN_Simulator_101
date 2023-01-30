@@ -67,6 +67,8 @@ void Xbar::cycle() {
             if(_port_out->canReceive(elem.get_bank_id())) {
                 _port_in->drain(i);
                 _port_out->receive(elem, elem.get_bank_id());
+                // cout << "Xbar processed the following element: ";
+                // elem.print();
             }
         }
     }
