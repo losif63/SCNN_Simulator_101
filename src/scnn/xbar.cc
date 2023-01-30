@@ -45,7 +45,7 @@ Xbar::Xbar(Scnn::ArchConfig& arch_cfg) {
     _port_out = new VirtualChannel<OA_element>;
     
     _port_in->init(_num_port_in, 1);
-    _port_out->init(_num_port_out, 1);
+    _port_out->init(_num_port_out, 100);
     
 }
 
@@ -56,11 +56,29 @@ Xbar::~Xbar() {
 }
 
 void Xbar::cycle() {
-    throw runtime_error("SCNN::Xbar cycle is not yet implemented");
+    if(idle()) return;
+    for(int i = 0; i < _num_port_in; i++) {
+        if(_port_in->canDrain(i)) {
+            OA_element elem = _port_in->next_elem_to_be_drained(i);
+            if(elem.get_valid() == false) {
+                _port_in->drain(i);
+                continue;
+            }
+            if(_port_out->canReceive(elem.get_bank_id())) {
+                _port_in->drain(i);
+                _port_out->receive(elem, elem.get_bank_id());
+            }
+        }
+    }
 }
 
+/* Returns if this Xbar has no OA_elements stuck in input port */
 bool Xbar::idle() {
-    throw runtime_error("SCNN::Xbar idle is not yet implemented");
+    bool isIdle = true;
+    for(int i = 0; i < _num_port_in; i++) {
+        isIdle = isIdle && _port_in->canReceive(i);
+    }
+    return isIdle;
 }
 
 void Xbar::clean() {

@@ -10,6 +10,8 @@
 #include "scnn/vir_ch.h"
 #include "scnn/loader.h"
 #include "scnn/mult_array.h"
+#include "scnn/xbar.h"
+#include "scnn/accum_banks.h"
 
 using namespace std;
 
@@ -194,7 +196,7 @@ unsigned    xbar_out_num_q_entries_per_phy_ch = 2;
     
 // sram size
 unsigned    chunk_sz_for_accum_bank_sizing = 2;
-unsigned    max_num_elem_per_bank = 0;
+unsigned    max_num_elem_per_bank = 2048;
 
 unsigned    max_OA_H_per_PE = 0;
 unsigned    max_OA_W_per_PE = 0;
@@ -282,6 +284,15 @@ Scnn::Xbar xbar(arch_config);
 
 
 /**********************************************************************/
+/* AccumulatorBanks */
+cout << "-----------------------------------------------------------\n";
+cout << "Testing Scnn::AccumulatorBanks class:" << endl; 
+
+Scnn::AccumulatorBanks accum_bank(arch_config);
+
+
+
+/**********************************************************************/
 /* MultArray */
 cout << "-----------------------------------------------------------\n";
 cout << "Testing Scnn::MultArray class:" << endl; 
@@ -349,17 +360,23 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
         for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
             for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
                 for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
+                    // cout << "Testing for N_id, C_id, chunk_id: " << N_id << ", " << C_id << ", " << chunk_id << endl;
                     mult.fill_WFIFO_and_IARAM(N_id, C_id, chunk_id);
-                    while(mult.end_of_mult() == false) {
-                        mult.compute_mul_array_output(&xbar);
-                        mult.advance_to_next_mul_op();
-                        xbar.clean();
+                    while((mult.idle() == false) || (xbar.idle() == false) || (accum_bank.idle(&xbar) == false)) {
+                        accum_bank.cycle(&xbar, loader->current_layer()->OFmap(), false);
+                        xbar.cycle();
+                        mult.cycle(&xbar);
                     }
+                    accum_bank.cycle(&xbar, loader->current_layer()->OFmap(), true);
+                    mult.clear_both_WFIFO_and_IARAM();
                 }
             }
         }
+        loader->current_layer()->OFmap()->print();
     }
 }
+
+// loader->current_layer()->OFmap()->print();
 
 /* TODO: Test multiplication after implementing Xbar */
 

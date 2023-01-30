@@ -20,9 +20,6 @@ public:
 
 	void    cycle();
     bool    idle();
-    /* void clean()
-    *  Function that empties all input and output ports
-    */
 	void    clean();
 
     int arbitrate_port_in_to_drain_from(unsigned port_out_id);

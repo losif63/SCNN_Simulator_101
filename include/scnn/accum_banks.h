@@ -21,7 +21,7 @@ public:
     AccumulatorBanks(Scnn::ArchConfig&  arch_cfg);
     ~AccumulatorBanks();
 
-	void							cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full);
+	void							cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full, bool flush);
     bool              			    idle(Scnn::Xbar* xbar);
 
     void							clean(unsigned set_id);
@@ -32,7 +32,7 @@ public:
     void                            switch_active_bank();
 
     // get
-    OA_element***                   banks();
+    OA_element*                   banks();
     unsigned                        ptr_active_bank();
     unsigned                        num_banks();
     unsigned                        num_elem_per_bank();
@@ -45,7 +45,7 @@ private:
     unsigned                        _num_elem_per_bank;
     unsigned                        _ptr_active_bank;
 
-    OA_element***                   _banks;
+    OA_element*                   _banks;
 
     /* Array of bool values, indicating emptiness of banks? */
     bool*                           _empty;

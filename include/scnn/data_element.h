@@ -72,6 +72,7 @@ public:
     ~OA_element();
 
     //get
+    bool            get_init();
     bool            get_valid();
     Fmap_t          get_data();
     tensor_4D_idx   get_idx();
@@ -80,11 +81,14 @@ public:
     void            print();
 
     // set
+    void            write_init(bool initValue);
     void            write_data(Fmap_t new_data);
     void            write_bank_id(unsigned new_id);
     void            write_idx_in_bank(unsigned new_idx);
+    void            accumulate(OA_element elem);
 
 private:
+    bool                    _init;
 	bool					_valid;
 	Fmap_t					_data;
     tensor_4D_idx           _idx;

@@ -34,7 +34,9 @@ IA_element::IA_element(
     this->_idx = idx;
 }
 
-OA_element::OA_element() {}
+OA_element::OA_element() {
+    this->_init = false;
+}
 
 OA_element::OA_element(
     bool valid,
@@ -43,6 +45,7 @@ OA_element::OA_element(
     unsigned bank_id,
     unsigned idx_in_bank
 ) {
+    this->_init = true;
     this->_valid = valid;
     this->_data = data;
     this->_idx = idx;
@@ -132,6 +135,11 @@ tensor_4D_idx IA_element::get_idx() {
     return this->_idx;
 }
 
+/* Public getter method for _init of OA_element */
+bool OA_element::get_init() {
+    return this->_init;
+}
+
 /* Public getter method for _valid of OA_element */
 bool OA_element::get_valid() {
     return this->_valid;
@@ -187,6 +195,11 @@ void IA_element::set_idx(tensor_4D_idx idx) {
     this->_idx = idx;
 }
 
+/* Public setter method for _init of OA_element */
+void OA_element::write_init(bool initValue) {
+    this->_init = initValue;
+}
+
 /* Public setter method for _data of OA_element */
 void OA_element::write_data(Fmap_t new_data) {
     this->_data = new_data;
@@ -200,6 +213,32 @@ void OA_element::write_bank_id(unsigned new_id) {
 /* Public setter method for _idx_in_bank of OA_element */
 void OA_element::write_idx_in_bank(unsigned new_idx) {
     this->_idx_in_bank = new_idx;
+}
+
+/* Public method for accumulation in accumulator bank */
+void OA_element::accumulate(OA_element elem) {
+    if(elem.get_valid() == false) {
+        throw runtime_error("ERROR: INVALID OA_ELEMENT INSERTED TO ACCUMULATOR BANK");
+    }
+    
+    if(this->_init == false) {
+        this->_init = elem.get_init();
+        this->_valid = elem.get_valid();
+        this->_data = elem.get_data();
+        this->_idx = elem.get_idx();
+        this->_bank_id = elem.get_bank_id();
+        this->_idx_in_bank = elem.get_idx_in_bank();;
+    }
+    /* Check if indices are equal */
+    else {
+        // this->print();
+        // elem.print();
+        if(_idx != elem.get_idx()) {
+            throw runtime_error("ERROR: OUTPUT INDEX INCONSISTENCY IN ACCUMULATOR BUFFER");
+            return;
+        }
+        this->_data += elem.get_data();
+    }
 }
 
 }

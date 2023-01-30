@@ -144,13 +144,19 @@ void MultArray::check_IA_slice_sanity(dlsim::Fmap4d_t* IA_full, unsigned N_id, u
     throw runtime_error("SCNN::MultArray check_IA_slice_sanity is not yet implemented");
 }
 
-// Xbar contains channels of OA_element
+// Here, we must check 2 things
+// First, if xbar is not idle (input port not cleared) then stall (return)
+// Second, if this multArray is currently idle, then return
 void MultArray::cycle(Scnn::Xbar* xbar) {
-    throw runtime_error("SCNN::MultArray cycle is not yet implemented");
+    if(idle()) return;
+    if(!xbar->idle()) return;
+    compute_mul_array_output(xbar);
+    advance_to_next_mul_op();
+
 }
 
 bool MultArray::idle() {
-    throw runtime_error("SCNN::MultArray idle is not yet implemented");
+    return end_of_mult();
 }
 
 bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
@@ -162,15 +168,15 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
             // If the C values do not match, insert dummy OA and continue
             // These invalid OA_elements will be eliminated in xbar
             if(get<1>((*wvec)[i].get_idx()) != get<1>((*iavec)[j].get_idx())) {
-                OA_element oa_elem(
-                    false,
-                    0.0,
-                    tuple<int, int, int, int>(-1, -1, -1, -1),
-                    -1,
-                    -1
-                );
-                int port_in_id = i * iavec->size() + j;
-                xbar->port_in()->receive(oa_elem, port_in_id);
+                // OA_element oa_elem(
+                //     false,
+                //     0.0,
+                //     tuple<int, int, int, int>(-1, -1, -1, -1),
+                //     -1,
+                //     -1
+                // );
+                // int port_in_id = i * iavec->size() + j;
+                // xbar->port_in()->receive(oa_elem, port_in_id);
                 continue;
             }
             int y_displacement = (_layer_cfg.get_S()-1)/2 - get<2>((*wvec)[i].get_idx());
@@ -181,6 +187,11 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
                 get<2>((*iavec)[j].get_idx()) + y_displacement,
                 get<3>((*iavec)[j].get_idx()) + x_displacement
             );
+            /* If the resulting H and W values are not in range,
+               Do not create an OA_element and just simply continue.
+            */
+            if((get<2>(oa_idx) < _base_offset_h_in_OA) || (get<2>(oa_idx) > _max_idx_h_in_OA)) continue;
+            if((get<3>(oa_idx) < _base_offset_w_in_OA) || (get<3>(oa_idx) > _max_idx_w_in_OA)) continue;
             OA_element oa_elem(
                 (*wvec)[i].get_valid() && (*iavec)[j].get_valid(),
                 (*wvec)[i].get_data() * (*iavec)[j].get_data(),
@@ -188,11 +199,11 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
                 get<0>(OA_idx_to_bank_addr(oa_idx)),
                 get<1>(OA_idx_to_bank_addr(oa_idx))
             );
-            cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-            (*iavec)[j].print();
-            (*wvec)[i].print();
-            oa_elem.print();
-            cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+            // cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+            // (*iavec)[j].print();
+            // (*wvec)[i].print();
+            // oa_elem.print();
+            // cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
 
             int port_in_id = i * iavec->size() + j;
             xbar->port_in()->receive(oa_elem, port_in_id);

@@ -36,18 +36,56 @@ AccumulatorBanks::AccumulatorBanks(Scnn::ArchConfig& arch_cfg) {
         arch_cfg.get_min_OA_H_per_PE(),
         arch_cfg.get_min_OA_W_per_PE()
     );
+
+    _num_banks = arch_cfg.get_xbar_out();
+    _num_elem_per_bank = arch_cfg.get_max_num_elem_per_bank();
+
+    _banks = new OA_element[_num_banks * _num_elem_per_bank];
 }
 
 AccumulatorBanks::~AccumulatorBanks() {
     delete _arch_cfg;
+    // delete _banks;
 }
 
-void AccumulatorBanks::cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full) {
-    throw runtime_error("SCNN::AccumulatorBanks cycle is not yet implemented");
+void AccumulatorBanks::cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full, bool flush) {
+    // cout << "Accumulator cycle called" << endl;
+    if(flush == true) {
+        // cout << "Flush called: " << endl;
+        for(int i = 0; i < _num_banks * _num_elem_per_bank; i++) {
+            OA_element elem = _banks[i];
+            if(elem.get_init() == false) continue;
+            else {
+                tuple<int, int, int, int> idx = elem.get_idx();
+                OA_full->set_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx), elem.get_data());
+                // cout << "Flushed to OA layer----";
+                // cout << "[" << get<0>(idx) 
+                // << ", " << get<1>(idx) << ", " << get<2>(idx) << ", "
+                // << get<3>(idx) << "]" << " ";
+                // cout << OA_full->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx)) << " ------ " << endl;
+            }
+        }
+        clean();
+    } 
+    else {
+        // cout << "No flush called: " << xbar->num_port_out() << endl;
+        for(int i = 0; i < xbar->num_port_out(); i++) {
+            if(xbar->port_out()->canDrain(i)) {
+                // cout << "Working!!" << endl;
+                OA_element elem = xbar->port_out()->next_elem_to_be_drained(i);
+                ACCUM_2D_INDEX_AT(_banks, _num_elem_per_bank, elem.get_bank_id(), elem.get_idx_in_bank()).accumulate(elem);
+                xbar->port_out()->drain(i);
+            }
+        }
+    }
 }
 
 bool AccumulatorBanks::idle(Scnn::Xbar* xbar) {
-    throw runtime_error("SCNN::AccumulatorBanks idle is not yet implemented");
+    bool isIdle = true;
+    for(int i = 0; i < xbar->num_port_out(); i++) {
+        isIdle = isIdle && !xbar->port_out()->canDrain(i);
+    }
+    return isIdle;
 }
 
 void AccumulatorBanks::clean(unsigned set_id) {
@@ -55,7 +93,9 @@ void AccumulatorBanks::clean(unsigned set_id) {
 }
 
 void AccumulatorBanks::clean() {
-    throw runtime_error("SCNN::AccumulatorBanks clean() is not yet implemented");
+    for(int i = 0; i < _num_banks * _num_elem_per_bank; i++) {
+        _banks[i].write_init(false);
+    }
 }
 
 unsigned AccumulatorBanks::ptr_idle_bank() {
@@ -66,7 +106,7 @@ void AccumulatorBanks::switch_active_bank() {
     throw runtime_error("SCNN::AccumulatorBanks switch_active_bank is not yet implemented");
 }
 
-OA_element*** AccumulatorBanks::banks() {
+OA_element* AccumulatorBanks::banks() {
     return _banks;
 }
 
