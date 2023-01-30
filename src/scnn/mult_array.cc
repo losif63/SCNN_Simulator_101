@@ -177,7 +177,7 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
             int x_displacement = (_layer_cfg.get_R()-1)/2 - get<3>((*wvec)[i].get_idx());
             tuple<int, int, int, int> oa_idx = tuple<int, int, int, int>(
                 get<0>((*iavec)[j].get_idx()),
-                get<1>((*wvec)[i].get_idx()),
+                get<0>((*wvec)[i].get_idx()),
                 get<2>((*iavec)[j].get_idx()) + y_displacement,
                 get<3>((*iavec)[j].get_idx()) + x_displacement
             );
