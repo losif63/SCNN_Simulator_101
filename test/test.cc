@@ -372,11 +372,42 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
                 }
             }
         }
-        loader->current_layer()->OFmap()->print();
+        // loader->current_layer()->OFmap()->print();
     }
 }
 
-// loader->current_layer()->OFmap()->print();
+dlsim::Fmap4d_t golden_output(4, layerConfig1.get_N(), layerConfig1.get_K(), layerConfig1.get_H(), layerConfig1.get_W(), _OA_Tensor, 0);
+golden_output.zeroInit();
+for(int n= 0; n < layerConfig1.get_N(); n++) {
+    for(int k = 0; k < layerConfig1.get_K(); k++) {
+        for(int c = 0; c < layerConfig1.get_C(); c++) {
+            for(int w = 0; w < layerConfig1.get_W(); w++) {
+                for(int h = 0; h < layerConfig1.get_H(); h++) {
+                    for(int s = 0; s < layerConfig1.get_S(); s++) {
+                        for(int r = 0; r < layerConfig1.get_R(); r++) {
+                            float currValue = golden_output.get_data(n, k, h, w);
+                            int inputH = h + s - (layerConfig1.get_S()-1)/2;
+                            int inputW = w + r - (layerConfig1.get_R()-1)/2;
+                            if((inputH < 0) || (inputH >= layerConfig1.get_H())) continue;
+                            if((inputW < 0) || (inputW >= layerConfig1.get_W())) continue;
+                            float inputValue = loader->current_layer()->IFmap()->get_data(n, c, inputH, inputW);
+                            float weightValue = loader->current_layer()->W()->get_data(k, c, s, r);
+                            float valueToAdd = inputValue * weightValue;
+                            golden_output.set_data(n, k, h, w, currValue + valueToAdd);
+                            cout << "Input [" << n << ", " << c << ", " << inputH << ", " << inputW << ", " << inputValue << "] | ";
+                            cout << "Weight [" << k << ", " << c << ", " << s << ", " << r << ", " << weightValue << "] | ";
+                            cout << "GOLDEN:: Partial Sum [" << n << ", " << k << ", " << h << ", " << w << ", " << valueToAdd << "]" << endl;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+loader->current_layer()->IFmap()->print();
+loader->current_layer()->W()->print();
+golden_output.print();
+loader->current_layer()->OFmap()->print();
 
 /* TODO: Test multiplication after implementing Xbar */
 

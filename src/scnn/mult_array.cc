@@ -167,7 +167,7 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
         for(int j = 0; j < iavec->size(); j++) {
             // If the C values do not match, insert dummy OA and continue
             // These invalid OA_elements will be eliminated in xbar
-            if(get<1>((*wvec)[i].get_idx()) != get<1>((*iavec)[j].get_idx())) {
+            // if(get<1>((*wvec)[i].get_idx()) != get<1>((*iavec)[j].get_idx())) {
                 // OA_element oa_elem(
                 //     false,
                 //     0.0,
@@ -177,8 +177,8 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
                 // );
                 // int port_in_id = i * iavec->size() + j;
                 // xbar->port_in()->receive(oa_elem, port_in_id);
-                continue;
-            }
+            //     continue;
+            // }
             int y_displacement = (_layer_cfg.get_S()-1)/2 - get<2>((*wvec)[i].get_idx());
             int x_displacement = (_layer_cfg.get_R()-1)/2 - get<3>((*wvec)[i].get_idx());
             tuple<int, int, int, int> oa_idx = tuple<int, int, int, int>(
@@ -192,6 +192,9 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
             */
             if((get<2>(oa_idx) < _base_offset_h_in_OA) || (get<2>(oa_idx) > _max_idx_h_in_OA)) continue;
             if((get<3>(oa_idx) < _base_offset_w_in_OA) || (get<3>(oa_idx) > _max_idx_w_in_OA)) continue;
+            cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
+            cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
+            cout << "TEST:: Partial Sum [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
             OA_element oa_elem(
                 (*wvec)[i].get_valid() && (*iavec)[j].get_valid(),
                 (*wvec)[i].get_data() * (*iavec)[j].get_data(),
@@ -199,11 +202,11 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
                 get<0>(OA_idx_to_bank_addr(oa_idx)),
                 get<1>(OA_idx_to_bank_addr(oa_idx))
             );
-            // cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+            cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
             // (*iavec)[j].print();
             // (*wvec)[i].print();
-            // oa_elem.print();
-            // cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+            oa_elem.print();
+            cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
 
             int port_in_id = i * iavec->size() + j;
             xbar->port_in()->receive(oa_elem, port_in_id);
