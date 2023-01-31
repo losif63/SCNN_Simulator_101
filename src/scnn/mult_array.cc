@@ -57,8 +57,8 @@ void MultArray::init(Scnn::LayerConfig& layer_cfg, dlsim::Fmap4d_t* IA_slice, dl
     _max_IA_w = layer_cfg.get_W();
     _max_OA_h = _max_IA_h + (2 * _pad_h_sz) - _max_s + 1;
     _max_OA_w = _max_IA_w + (2 * _pad_w_sz) - _max_r + 1;
-    _max_OA_H_per_PE = _max_OA_h/_arch_cfg->get_pe_arr_H();
-    _max_OA_W_per_PE = _max_OA_w/_arch_cfg->get_pe_arr_W();
+    _max_OA_H_per_PE = (int)ceil((float)_max_OA_h/(float)_arch_cfg->get_pe_arr_H());
+    _max_OA_W_per_PE = (int)ceil((float)_max_OA_w/(float)_arch_cfg->get_pe_arr_W());
     _base_offset_h_in_OA = _max_OA_H_per_PE * _pe_arr_h_idx;
     _base_offset_w_in_OA = _max_OA_W_per_PE * _pe_arr_w_idx;
     _max_idx_h_in_OA = _max_OA_H_per_PE * (_pe_arr_h_idx + 1) - 1;
@@ -113,8 +113,8 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
 
     /* Fill IARAM */
     index = 0;
-    unsigned slice_H = (_layer_cfg.get_H()/_arch_cfg->get_pe_arr_H()) + _layer_cfg.get_S() - 1;
-    unsigned slice_W = (_layer_cfg.get_W()/_arch_cfg->get_pe_arr_W()) + _layer_cfg.get_R() - 1;
+    unsigned slice_H = (int)ceil(((float)_layer_cfg.get_H() / (float)_arch_cfg->get_pe_arr_H())) + _layer_cfg.get_S() - 1;
+    unsigned slice_W = (int)ceil(((float)_layer_cfg.get_W() / (float)_arch_cfg->get_pe_arr_W())) + _layer_cfg.get_R() - 1;
     IA_vec_entry* IAvec = new IA_vec_entry;
     /* Buffer size: N * C * H * W, but N and C are determined */
     /* Therefore, must iterate through H * W */
@@ -180,9 +180,10 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
 
     // DEBUG
     // cout << endl;
-    // cout << "Curret PE: " << _pe_arr_h_idx << ", " << _pe_arr_w_idx << endl;
+    // cout << "Current PE: " << _pe_arr_h_idx << ", " << _pe_arr_w_idx << endl;
     // cout << "Current WFIFO & entry size: " << _WFIFO.size() << ", " << wvec->size() << endl;
     // cout << "Current IARAM & entry size: " << _IARAM.size() << ", " << iavec->size() << endl;
+    if((_IARAM.size() == 0) || (_WFIFO.size() == 0)) return true;
     for(int i = 0; i < wvec->size(); i++) {
         for(int j = 0; j < iavec->size(); j++) {
             /* If either one of WFIFO or IARAM is a dummy, then continue */
@@ -207,17 +208,19 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
             /* If the resulting H and W values are not in range,
                Do not create an OA_element and just simply continue.
             */
-            if((get<2>(oa_idx) < _base_offset_h_in_OA) || (get<2>(oa_idx) > _max_idx_h_in_OA)) {
+           int max_h_idx = (_max_idx_h_in_OA < (_layer_cfg.get_H() - 1)) ? _max_idx_h_in_OA : _layer_cfg.get_H() - 1;
+           int max_w_idx = (_max_idx_w_in_OA < (_layer_cfg.get_W() - 1)) ? _max_idx_w_in_OA : _layer_cfg.get_W() - 1;
+            if((get<2>(oa_idx) < _base_offset_h_in_OA) || (get<2>(oa_idx) > max_h_idx)) {
                 //DEBUG
                 // cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
                 // cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
-                // cout << "H not in range " << _base_offset_h_in_OA << " ~ " << _max_idx_h_in_OA << " [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
+                // cout << "H not in range " << _base_offset_h_in_OA << " ~ " << max_h_idx << " [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
                 continue;
             }
-            if((get<3>(oa_idx) < _base_offset_w_in_OA) || (get<3>(oa_idx) > _max_idx_w_in_OA)) {
+            if((get<3>(oa_idx) < _base_offset_w_in_OA) || (get<3>(oa_idx) > max_w_idx)) {
                 // cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
                 // cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
-                // cout << "W not in range " << _base_offset_w_in_OA << " ~ " << _max_idx_w_in_OA << " [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
+                // cout << "W not in range " << _base_offset_w_in_OA << " ~ " << max_w_idx << " [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
                 continue;
             }
             // DEBUG
@@ -242,6 +245,7 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
             xbar->port_in()->receive(oa_elem, port_in_id);
         }
     }
+    return true;
 }
 
 /* Method that generates an "accumulator address" from output index */
@@ -345,14 +349,17 @@ IA_vec_entry* MultArray::curr_IARAM_entry() {
 }    
 
 bool MultArray::end_of_WFIFO() {
+    if(_curr_IARAM_size == 0) return true;
     return ((_c_WFIFO_advance % _curr_WFIFO_size) == 0);
 }
 
 bool MultArray::end_of_IARAM() {
+    if(_curr_IARAM_size == 0) return true;
     return ((_c_IARAM_advance % _curr_IARAM_size) == 0);
 }
 
 bool MultArray::end_of_mult() {
+    if((_curr_WFIFO_size == 0) || (_curr_IARAM_size == 0)) return true;
     return ((_c_IARAM_advance > 1) && (((_c_IARAM_advance - 1) % (_curr_WFIFO_size * _curr_IARAM_size)) == 0));
 }
 

@@ -176,8 +176,8 @@ cout << "-----------------------------------------------------------\n";
 cout << "Testing Scnn::Loader class:" << endl; 
 
 // pe array
-unsigned    pe_arr_W = 4;
-unsigned    pe_arr_H = 4;
+unsigned    pe_arr_W = 5;
+unsigned    pe_arr_H = 5;
 
 // pe & mult_array -> Multiplier Array
 unsigned    mult_arr_F = 6;
@@ -256,10 +256,10 @@ for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
         // cout << "current i, j: " << i << " " << j << endl;
         dlsim::Fmap4d_t* slice = loader_scnn->IA_slice()[i * arch_config.get_pe_arr_W() + j];
         // cout << "current i, j: " << i << " " << j << endl;
-        for(int n = 0; n < slice->dim_sz(slice->key()[0]); n++) {
-            for(int c = 0; c < slice->dim_sz(slice->key()[1]); c++) {
-                for(int h = 0; h < slice->dim_sz(slice->key()[2]); h++) {
-                    for(int w = 0; w < slice->dim_sz(slice->key()[3]); w++) {
+        for(int n = 0; n < slice->dim_sz('N'); n++) {
+            for(int c = 0; c < slice->dim_sz('C'); c++) {
+                for(int h = 0; h < slice->dim_sz('H'); h++) {
+                    for(int w = 0; w < slice->dim_sz('W'); w++) {
                         // cout << "Current nchw:" << n << " " << c << " " << h << " " << w << endl;
                         int actual_H = i * new_H + h - ((layerConfig1.get_S() - 1) / 2);
                         int actual_W = j * new_W + w - ((layerConfig1.get_R() - 1) / 2);

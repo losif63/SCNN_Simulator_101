@@ -12,6 +12,7 @@
 #include "scnn/layer_config.h"
 #include "scnn/vir_ch.h"
 #include "scnn/xbar.h"
+#include <math.h>
 
 #define NUM_ACCUM_HAZARD_BINS 9 
 #define NUM_ACCUM_BANKS_BINS  32

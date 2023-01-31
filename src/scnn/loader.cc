@@ -8,7 +8,6 @@
 #define SCNN_LOADER_CC_
 
 #include "scnn/loader.h"
-#include <math.h>
 
 namespace Scnn {
 

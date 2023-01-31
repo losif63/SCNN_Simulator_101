@@ -72,8 +72,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(CPP_SUFFIX)
 
 test: $(TESTOBJ) $(OBJ2)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(TESTOBJ) $(OBJ2) -o $(TEST_EXE)
-	./$(TEST_EXE) > RESULTS
-	cat RESULTS
+	./$(TEST_EXE) | tee RESULTS
 
 
 $(TESTOBJ_DIR)/%.o: $(TEST_DIR)/%.$(CPP_SUFFIX)

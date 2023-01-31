@@ -10,6 +10,7 @@
 #include "scnn/common.h"
 #include "scnn/arch_config.h"
 #include "scnn/layer_config.h"
+#include <math.h>
 
 namespace Scnn
 {
