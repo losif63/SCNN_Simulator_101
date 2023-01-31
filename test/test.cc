@@ -180,12 +180,12 @@ unsigned    pe_arr_W = 4;
 unsigned    pe_arr_H = 4;
 
 // pe & mult_array -> Multiplier Array
-unsigned    mult_arr_M = 4;
-unsigned    mult_arr_W = 4;
+unsigned    mult_arr_F = 6;
+unsigned    mult_arr_I = 6;
     
 // x-bar -> crossbar
-unsigned    xbar_in = mult_arr_M * mult_arr_W; 
-unsigned    xbar_scale_out_ratio  = 1;
+unsigned    xbar_in = mult_arr_F * mult_arr_I; 
+unsigned    xbar_scale_out_ratio  = 2;
 unsigned    xbar_out  = xbar_in*(xbar_scale_out_ratio);
     
 // q --> queue?
@@ -209,8 +209,8 @@ Scnn::ArchConfig arch_config(
     pe_arr_H,
 
     // mult array            
-    mult_arr_M, 
-    mult_arr_W, 
+    mult_arr_F, 
+    mult_arr_I, 
 
     //xbar
     xbar_in_num_phy_ch_q, 
@@ -231,7 +231,16 @@ Scnn::ArchConfig arch_config(
     min_OA_W_per_PE
 );
 
-Scnn::LayerConfig layerConfig1(1, 4, 16, 16, 4, 3, 3, 2);
+Scnn::LayerConfig layerConfig1(
+    loader->current_layer()->IFmap()->dim_sz('N'),
+    loader->current_layer()->IFmap()->dim_sz('C'),
+    loader->current_layer()->IFmap()->dim_sz('H'),
+    loader->current_layer()->IFmap()->dim_sz('W'),
+    loader->current_layer()->W()->dim_sz('K'),
+    loader->current_layer()->W()->dim_sz('R'),
+    loader->current_layer()->W()->dim_sz('S'),
+    arch_config.get_chunk_sz_for_accum_bank_sizing()
+);
 
 Scnn::Loader* loader_scnn = new Scnn::Loader(arch_config);
 loader_scnn->setup_IA_W_and_OA(loader->current_layer()->IFmap(),
@@ -356,7 +365,7 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
             }
         }  
         test<bool>(true, IARAM_pass);
-        for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
+        for(unsigned chunk_id = 0; chunk_id <= layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
             for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
                 for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
                     // for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
@@ -395,6 +404,7 @@ for(int n= 0; n < layerConfig1.get_N(); n++) {
                             float weightValue = loader->current_layer()->W()->get_data(k, c, s, r);
                             float valueToAdd = inputValue * weightValue;
                             golden_output.set_data(n, k, h, w, currValue + valueToAdd);
+                            // DEBUG
                             // cout << "Input [" << n << ", " << c << ", " << inputH << ", " << inputW << ", " << inputValue << "] | ";
                             // cout << "Weight [" << k << ", " << c << ", " << s << ", " << r << ", " << weightValue << "] | ";
                             // cout << "GOLDEN:: Partial Sum [" << n << ", " << k << ", " << h << ", " << w << ", " << valueToAdd << "]" << endl;
@@ -405,10 +415,25 @@ for(int n= 0; n < layerConfig1.get_N(); n++) {
         }
     }
 }
-loader->current_layer()->IFmap()->print();
-loader->current_layer()->W()->print();
+// loader->current_layer()->IFmap()->print();
+// loader->current_layer()->W()->print();
 golden_output.print();
 loader->current_layer()->OFmap()->print();
+for(int n= 0; n < layerConfig1.get_N(); n++) {
+    for(int k = 0; k < layerConfig1.get_K(); k++) {
+        for(int w = 0; w < layerConfig1.get_W(); w++) {
+            for(int h = 0; h < layerConfig1.get_H(); h++) {
+                float goldValue = golden_output.get_data(n, k, h, w);
+                float calValue = loader->current_layer()->OFmap()->get_data(n, k, h, w);
+                float error = calValue - goldValue;
+                cout << error << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
 
 /* TODO: Test multiplication after implementing Xbar */
 

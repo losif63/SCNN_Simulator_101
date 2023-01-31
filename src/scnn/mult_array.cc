@@ -76,13 +76,20 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
     /* Fill WFIFO */
     /* K range: (chunk_id * chunk_sz) ~ (chunk_id * chunk_sz + chunk_sz-1) */
     int index = 0;
+    int WFIFO_size = 0;
+    int IARAM_size = 0;
     W_vec_entry* Wvec = new W_vec_entry;
     /* Buffer size: C * Kc * S * R, but C is determined */
     /* Therefore, must iterate through Kc * S * R */
+    /* If Kc is not valid, then don't insert & continue */
     while(index < _layer_cfg.get_chunk_sz() * _layer_cfg.get_S() * _layer_cfg.get_R()) {
         int kIndex = (index / (_layer_cfg.get_S() * _layer_cfg.get_R())) + chunk_id * _layer_cfg.get_chunk_sz();
         int sIndex = (index % (_layer_cfg.get_S() * _layer_cfg.get_R())) / _layer_cfg.get_R();
         int rIndex = index % _layer_cfg.get_R();
+        if(kIndex >= _layer_cfg.get_K()) {
+            index++;
+            continue;
+        }
         if(_W->get_data(kIndex, C_id, sIndex, rIndex) != 0.0) {
             W_element w_elem(true, _W->get_data(kIndex, C_id, sIndex, rIndex), tuple<int, int, int, int>(kIndex, C_id, sIndex, rIndex));
             Wvec->push_back(w_elem);
@@ -91,6 +98,7 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
         if(Wvec->size() == _arch_cfg->get_mult_arr_F()) {
             _WFIFO.push_back(Wvec);
             Wvec = new W_vec_entry;
+            WFIFO_size++;
         }
         index++;
     }
@@ -100,6 +108,7 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
             Wvec->push_back(dummy);
         }
         _WFIFO.push_back(Wvec);
+        WFIFO_size++;
     }
 
     /* Fill IARAM */
@@ -118,11 +127,13 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
         if(_IA_slice->get_data(N_id, C_id, hIndex, wIndex) != 0.0) {
             IA_element ia_elem(true, _IA_slice->get_data(N_id, C_id, hIndex, wIndex), tuple<int, int, int, int>(N_id, C_id, actualH, actualW));
             IAvec->push_back(ia_elem);
+            // DEBUG
             // cout << "[" << N_id << ", " << C_id << ", " << actualH << ", " << actualW << "] " << _IA_slice->get_data(N_id, C_id, hIndex, wIndex) << " inserted" << endl;
         }
         if(IAvec->size() == _arch_cfg->get_mult_arr_I()) {
             _IARAM.push_back(IAvec);
             IAvec = new IA_vec_entry;
+            IARAM_size++;
         }
         index++;
     }
@@ -132,8 +143,12 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
             IAvec->push_back(dummy);
         }
         _IARAM.push_back(IAvec);
+        IARAM_size++;
     }
 
+    // DEBUG
+    // cout << "***WFIFO SIZE***: " << WFIFO_size << ", " << _WFIFO.size() << endl;
+    // cout << "***IARAM SIZE***: " << IARAM_size << ", " << _IARAM.size() << endl;
     _curr_WFIFO_size = _WFIFO.size();
     _curr_IARAM_size = _IARAM.size();
     _c_WFIFO_advance = 1;
@@ -163,22 +178,24 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
     W_vec_entry* wvec = curr_WFIFO_entry();
     IA_vec_entry* iavec = curr_IARAM_entry();
 
+    // DEBUG
+    // cout << endl;
+    // cout << "Curret PE: " << _pe_arr_h_idx << ", " << _pe_arr_w_idx << endl;
+    // cout << "Current WFIFO & entry size: " << _WFIFO.size() << ", " << wvec->size() << endl;
+    // cout << "Current IARAM & entry size: " << _IARAM.size() << ", " << iavec->size() << endl;
     for(int i = 0; i < wvec->size(); i++) {
         for(int j = 0; j < iavec->size(); j++) {
-            // If the C values do not match, insert dummy OA and continue
-            // These invalid OA_elements will be eliminated in xbar
-            // if(get<1>((*wvec)[i].get_idx()) != get<1>((*iavec)[j].get_idx())) {
-                // OA_element oa_elem(
-                //     false,
-                //     0.0,
-                //     tuple<int, int, int, int>(-1, -1, -1, -1),
-                //     -1,
-                //     -1
-                // );
-                // int port_in_id = i * iavec->size() + j;
-                // xbar->port_in()->receive(oa_elem, port_in_id);
-            //     continue;
-            // }
+            /* If either one of WFIFO or IARAM is a dummy, then continue */
+            if((*wvec)[i].get_valid() == false) {
+                // DEBUG
+                // cout << "Weight dummy" << endl;
+                continue;
+            }
+            if((*iavec)[j].get_valid() == false) {
+                // DEBUG
+                // cout << "Input dummy" << endl;
+                continue;
+            }
             int y_displacement = (_layer_cfg.get_S()-1)/2 - get<2>((*wvec)[i].get_idx());
             int x_displacement = (_layer_cfg.get_R()-1)/2 - get<3>((*wvec)[i].get_idx());
             tuple<int, int, int, int> oa_idx = tuple<int, int, int, int>(
@@ -190,8 +207,20 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
             /* If the resulting H and W values are not in range,
                Do not create an OA_element and just simply continue.
             */
-            if((get<2>(oa_idx) < _base_offset_h_in_OA) || (get<2>(oa_idx) > _max_idx_h_in_OA)) continue;
-            if((get<3>(oa_idx) < _base_offset_w_in_OA) || (get<3>(oa_idx) > _max_idx_w_in_OA)) continue;
+            if((get<2>(oa_idx) < _base_offset_h_in_OA) || (get<2>(oa_idx) > _max_idx_h_in_OA)) {
+                //DEBUG
+                // cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
+                // cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
+                // cout << "H not in range " << _base_offset_h_in_OA << " ~ " << _max_idx_h_in_OA << " [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
+                continue;
+            }
+            if((get<3>(oa_idx) < _base_offset_w_in_OA) || (get<3>(oa_idx) > _max_idx_w_in_OA)) {
+                // cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
+                // cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
+                // cout << "W not in range " << _base_offset_w_in_OA << " ~ " << _max_idx_w_in_OA << " [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
+                continue;
+            }
+            // DEBUG
             // cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
             // cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
             // cout << "TEST:: Partial Sum [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
@@ -202,6 +231,7 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
                 get<0>(OA_idx_to_bank_addr(oa_idx)),
                 get<1>(OA_idx_to_bank_addr(oa_idx))
             );
+            // DEBUG
             // cout << "- - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
             // (*iavec)[j].print();
             // (*wvec)[i].print();
@@ -271,8 +301,14 @@ void MultArray::advance_to_next_mul_op() {
     * To do so, we first advance IARAM only
     * After completing an IARAM cycle, advance WFIFO and repeat
     */
-    if(end_of_IARAM()) advance_WFIFO();
+    if(end_of_IARAM()) {
+        // DEBUG
+        // cout << "Advance WFIFO & ";
+        advance_WFIFO();
+    }
     advance_IARAM();
+    // DEBUG
+    // cout << "Advance IARAM" << endl;
 }
 
 void MultArray::clear_both_WFIFO_and_IARAM(){
@@ -317,7 +353,7 @@ bool MultArray::end_of_IARAM() {
 }
 
 bool MultArray::end_of_mult() {
-    return ((_c_IARAM_advance % (_curr_WFIFO_size * _curr_IARAM_size)) == 0);
+    return ((_c_IARAM_advance > 1) && (((_c_IARAM_advance - 1) % (_curr_WFIFO_size * _curr_IARAM_size)) == 0));
 }
 
 unsigned MultArray::size_WFIFO() {

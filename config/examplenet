@@ -1,7 +1,7 @@
 NUM_LAYER: 3
 N: 1
-C: 4
-K: 4
+C: 5
+K: 5
 W: 16
 H: 16
 R: 3
@@ -10,7 +10,7 @@ IA_sparsity: 50
 W_sparsity: 50
 
 N: 1
-C: 4
+C: 5
 K: 2
 W: 16
 H: 16

@@ -58,6 +58,7 @@ void AccumulatorBanks::cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full, bool fl
             else {
                 tuple<int, int, int, int> idx = elem.get_idx();
                 OA_full->set_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx), elem.get_data());
+                // DEBUG
                 // cout << "Flushed to OA layer----";
                 // cout << "[" << get<0>(idx) 
                 // << ", " << get<1>(idx) << ", " << get<2>(idx) << ", "
@@ -72,15 +73,19 @@ void AccumulatorBanks::cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full, bool fl
         // cout << "No flush called: " << xbar->num_port_out() << endl;
         for(int i = 0; i < xbar->num_port_out(); i++) {
             if(xbar->port_out()->canDrain(i)) {
-                // cout << "Working!!" << endl;
                 OA_element elem = xbar->port_out()->next_elem_to_be_drained(i);
+                // DEBUG
                 // cout << "Before: ";
                 // ACCUM_2D_INDEX_AT(_banks, _num_elem_per_bank, elem.get_bank_id(), elem.get_idx_in_bank()).print();
+
                 ACCUM_2D_INDEX_AT(_banks, _num_elem_per_bank, elem.get_bank_id(), elem.get_idx_in_bank()).accumulate(elem);
+                
+                // DEBUG
                 // cout << "Accumulator accumulated: ";
                 // elem.print();
                 // cout << "After: ";
                 // ACCUM_2D_INDEX_AT(_banks, _num_elem_per_bank, elem.get_bank_id(), elem.get_idx_in_bank()).print();
+
                 xbar->port_out()->drain(i);
             }
         }
