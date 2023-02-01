@@ -19,7 +19,7 @@ PE::PE(
     _oa_banks     = new Scnn::AccumulatorBanks(arch_cfg);    
     _ppu          = new Scnn::PPU(arch_cfg);  
 
-    _cycle        = 0;    
+    _cycle        = 0;
 
     // stat
     _c_cycle_waiting_at_barrier         = 0;
@@ -42,17 +42,17 @@ PE::cycle(){
     // stats
     _cycle++;
 
-    if(finished_layer_exec()==true) {
-        _c_cycle_finished_waiting_others++;
-    }
-    else {
-        if(sync_barrier()==true) {
-            _c_cycle_waiting_at_barrier++;
-        }
-        else {
-            _c_cycle_active++;
-        }
-    }
+    // if(finished_layer_exec()==true) {
+    //     _c_cycle_finished_waiting_others++;
+    // }
+    // else {
+    //     if(sync_barrier()==true) {
+    //         _c_cycle_waiting_at_barrier++;
+    //     }
+    //     else {
+    //         _c_cycle_active++;
+    //     }
+    // }
     //================================================================================
 
     //================================================================================
@@ -66,12 +66,46 @@ PE::cycle(){
     // (all comp. idle) && (done all this layer) && (all idle)
     // then, IT SHOULD GET REST CHUNK OF WEIGHT SETS
     //================================================================================
+    if(done()) return;
+    if(idle()) {
+        _mult_array->clear_both_WFIFO_and_IARAM();
+        advance_layer();
+        // Here, one should check for clearing OARAM
+        if(_layer_idx % (layer_N * layer_C) == 0) _oa_banks->cycle(_xbar, _OA_full, true);
+        unsigned chunk_id = _layer_idx / (layer_N * layer_C);
+        unsigned N_id = (_layer_idx / layer_C) % layer_N;
+        unsigned C_id = _layer_idx % layer_C;
+        _mult_array->fill_WFIFO_and_IARAM(N_id, C_id, chunk_id);
+        _oa_banks->cycle(_xbar, _OA_full, false);
+        _xbar->cycle();
+        _mult_array->cycle(_xbar);
+    }
+    else {
+        _oa_banks->cycle(_xbar, _OA_full, false);
+        _xbar->cycle();
+        _mult_array->cycle(_xbar);
+    }
 }
 
 bool
 PE::idle(){
     // all component idle
-    return (_mult_array->idle()==true)&&(_xbar->idle()==true)&&(_ppu->idle()==true)&&(_oa_banks->idle(_xbar)==true);
+    return (_mult_array->idle()==true)&&(_xbar->idle()==true)&&(_oa_banks->idle(_xbar)==true);
+}
+
+void
+PE::advance_layer() {
+    _layer_idx++;
+}
+
+bool
+PE::end_of_layer() {
+    return _layer_idx >= (max_chunk_id + 1) * layer_N * layer_C;
+}
+
+bool
+PE::done() {
+    return idle() && end_of_layer();
 }
 
 bool PE::finished_layer_exec() {
@@ -90,10 +124,23 @@ void PE::prepare_current_layer(
     _IA_slice = IA_slice;
     _W = W;
     _layer_cfg = layer_cfg;
+    
+    _layer_idx = 0;
+    max_chunk_id = layer_cfg.get_K()/layer_cfg.get_chunk_sz();
+    layer_N = layer_cfg.get_N();
+    layer_C = layer_cfg.get_C();
+    _mult_array->fill_WFIFO_and_IARAM(0, 0, 0);
 }
 
 void PE::cleanup_current_layer() {
-    throw runtime_error("SCNN::PE cleanup_current_layer is not yet implemented");
+    _layer_idx = 0;
+    _IA_full = NULL;
+    _OA_full = NULL;
+    _IA_slice = NULL;
+    _W = NULL;
+
+    _mult_array->clean();
+    _oa_banks->clean();
 }
 
 void PE::find_work() {

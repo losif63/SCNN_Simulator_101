@@ -15,6 +15,7 @@
 #include <string>
 #include <random>
 #include <cassert>
+#include <math.h>
 
 //#define DEBUG
 //#define give_sparsity

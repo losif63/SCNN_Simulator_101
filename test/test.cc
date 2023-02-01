@@ -176,16 +176,16 @@ cout << "-----------------------------------------------------------\n";
 cout << "Testing Scnn::Loader class:" << endl; 
 
 // pe array
-unsigned    pe_arr_W = 5;
-unsigned    pe_arr_H = 5;
+unsigned    pe_arr_W = 8;
+unsigned    pe_arr_H = 8;
 
 // pe & mult_array -> Multiplier Array
-unsigned    mult_arr_F = 6;
-unsigned    mult_arr_I = 6;
+unsigned    mult_arr_F = 13;
+unsigned    mult_arr_I = 7;
     
 // x-bar -> crossbar
 unsigned    xbar_in = mult_arr_F * mult_arr_I; 
-unsigned    xbar_scale_out_ratio  = 2;
+unsigned    xbar_scale_out_ratio = 2;
 unsigned    xbar_out  = xbar_in*(xbar_scale_out_ratio);
     
 // q --> queue?
@@ -343,7 +343,7 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
         bool IARAM_pass = true;
         // loader_scnn->IA()->print();
         int slice_id = pe_h * arch_config.get_pe_arr_W() + pe_w;
-        mult.init(layerConfig1, loader_scnn->IA_slice()[slice_id], loader_scnn->W());
+        // mult.init(layerConfig1, loader_scnn->IA_slice()[slice_id], loader_scnn->W());
         // loader_scnn->IA_slice()[slice_id]->print();
         for(unsigned N_id = 0; N_id < layerConfig1.get_N(); N_id++) {
             for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
@@ -417,8 +417,9 @@ for(int n= 0; n < layerConfig1.get_N(); n++) {
 }
 // loader->current_layer()->IFmap()->print();
 // loader->current_layer()->W()->print();
-golden_output.print();
-loader->current_layer()->OFmap()->print();
+// golden_output.print();
+// loader->current_layer()->OFmap()->print();
+bool accuracyTest = true;
 for(int n= 0; n < layerConfig1.get_N(); n++) {
     for(int k = 0; k < layerConfig1.get_K(); k++) {
         for(int w = 0; w < layerConfig1.get_W(); w++) {
@@ -426,6 +427,7 @@ for(int n= 0; n < layerConfig1.get_N(); n++) {
                 float goldValue = golden_output.get_data(n, k, h, w);
                 float calValue = loader->current_layer()->OFmap()->get_data(n, k, h, w);
                 float error = calValue - goldValue;
+                accuracyTest = accuracyTest && (fabs(error) < 0.001);
                 cout << error << " ";
             }
             cout << endl;
@@ -434,7 +436,13 @@ for(int n= 0; n < layerConfig1.get_N(); n++) {
     }
     cout << endl;
 }
-
+test<bool>(accuracyTest, true);
+cout << endl;
+if(accuracyTest) {
+    cout << "SCNN simulator output is correct!!" << endl << endl;
+} else {
+    cout << "ERROR: SCNN simulator output incorrect!!" << endl << endl;
+}
 /* TODO: Test multiplication after implementing Xbar */
 
 

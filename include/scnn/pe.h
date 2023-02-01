@@ -24,6 +24,9 @@ public:
 	void    cycle();
     bool    finished_layer_exec();	
     bool    idle();
+    void    advance_layer();
+    bool    end_of_layer();
+    bool    done();
 	void    prepare_current_layer(
                 dlsim::Fmap4d_t* IA_full,
                 dlsim::Fmap4d_t* OA_full,
@@ -57,6 +60,12 @@ private:
     // state
     bool                            _sync_barrier;
     unsigned long long              _cycle;
+
+    /* Curr layer info */
+    unsigned                        _layer_idx;
+    unsigned                        max_chunk_id;
+    unsigned                        layer_N;
+    unsigned                        layer_C;
 
 	// PE config
 	Scnn::ArchConfig			      _arch_cfg;

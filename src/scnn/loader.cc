@@ -125,7 +125,13 @@ void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
 }
 
 void Loader::clear_IA_slice_and_W() {
-    throw runtime_error("SCNN::Loader method clear_IA_slice_and_W is not yet implemented");
+    for(int i = 0; i < _arch_cfg->get_pe_arr_H() * _arch_cfg->get_pe_arr_W(); i++) {
+        delete _IA_slice[i];
+    }
+    delete _IA_slice;
+    _IA = NULL;
+    _W = NULL;
+    _OA = NULL;
 }
 
 

@@ -77,12 +77,13 @@ void AccumulatorBanks::cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full, bool fl
                 // DEBUG
                 // cout << "Before: ";
                 // ACCUM_2D_INDEX_AT(_banks, _num_elem_per_bank, elem.get_bank_id(), elem.get_idx_in_bank()).print();
-
-                ACCUM_2D_INDEX_AT(_banks, _num_elem_per_bank, elem.get_bank_id(), elem.get_idx_in_bank()).accumulate(elem);
                 
                 // DEBUG
                 // cout << "Accumulator accumulated: ";
                 // elem.print();
+                ACCUM_2D_INDEX_AT(_banks, _num_elem_per_bank, elem.get_bank_id(), elem.get_idx_in_bank()).accumulate(elem);
+                
+                // DEBUG
                 // cout << "After: ";
                 // ACCUM_2D_INDEX_AT(_banks, _num_elem_per_bank, elem.get_bank_id(), elem.get_idx_in_bank()).print();
 

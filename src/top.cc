@@ -10,6 +10,8 @@
 #include "scnn/common.h"
 #include "scnn/perf_sim.h"
 
+// #define DEBUG
+
 using namespace std;
 
 int main (int argc, char** argv){
@@ -40,16 +42,12 @@ int main (int argc, char** argv){
         
     // x-bar -> crossbar
     unsigned    xbar_in = mult_arr_F * mult_arr_I; 
-    // Use this number to modify accumulator buffer number
-    unsigned    xbar_scale_out_ratio  = 1;
+    unsigned    xbar_scale_out_ratio = 1;
     unsigned    xbar_out  = xbar_in*(xbar_scale_out_ratio);
         
     // q --> queue?
-    // Queue that comes before accum buffers
     unsigned    xbar_in_num_phy_ch_q  = xbar_out;
-    // This is the "depth" of the queue
     unsigned    xbar_in_num_q_entries_per_phy_ch = 1;
-    // Not sure what this is fore, probably wouldn't be using them
     unsigned    xbar_out_num_phy_ch_q  = 1;
     unsigned    xbar_out_num_q_entries_per_phy_ch = 2;
         
@@ -86,8 +84,8 @@ int main (int argc, char** argv){
         unsigned  max_OA_H  = (max_IA_H - max_R + 2*pad_H_sz)/stride_R + 1;
         unsigned  max_OA_W  = (max_IA_W - max_S + 2*pad_W_sz)/stride_S + 1;
 
-        unsigned  max_H_per_PE = max_OA_H;
-        unsigned  max_W_per_PE = max_OA_W;
+        unsigned  max_H_per_PE = (int)ceil((float)max_OA_H/(float)pe_arr_H) + max_S - 1;
+        unsigned  max_W_per_PE = (int)ceil((float)max_OA_W/(float)pe_arr_W) + max_R - 1;
         
         // Sweeping all layer, determine the Max and min OA_H_per_PE
         // OA's max H per PE
@@ -112,9 +110,10 @@ int main (int argc, char** argv){
     }
 
     // SCNN uArch parameter
-    max_num_elem_per_bank = (max_OA_H_per_PE * max_OA_W_per_PE * chunk_sz_for_accum_bank_sizing) / xbar_out;
+    max_num_elem_per_bank = (int)ceil((float)(max_OA_H_per_PE * max_OA_W_per_PE * chunk_sz_for_accum_bank_sizing) / (float)xbar_out);
     // sanity
-    assert(((max_OA_H_per_PE * max_OA_W_per_PE * chunk_sz_for_accum_bank_sizing) % xbar_out)==0);
+    cout << max_OA_H_per_PE << ", " << max_OA_W_per_PE << ", " << chunk_sz_for_accum_bank_sizing << ", " << xbar_out << endl;
+    // assert(((max_OA_H_per_PE * max_OA_W_per_PE * chunk_sz_for_accum_bank_sizing) % xbar_out)==0);
 
     cout << "+++++++ PREPROCESSING STEP END : DNN TOPOLOGY ANALYSIS +++++++" << endl;
     // make SCNN configuration
@@ -163,20 +162,22 @@ int main (int argc, char** argv){
         #ifdef DEBUG
         dnn_loader.print_layer();
         #endif
+
         // SEND A LAYER TO PERFORMANCE SIMULATOR
+        // cout << "Reached before prepare_current_layer" << endl;
         perf_sim->prepare_current_layer(
             dnn_loader.current_layer()->IFmap(),
             dnn_loader.current_layer()->W(),
             dnn_loader.current_layer()->OFmap()
         );
-
         // DO PERFORMANCE SIMULATION
         unsigned cycle = 0;
         //cout << "+++ cycle = "  << cycle << endl;
-
-        while(perf_sim->done() == 0){
+        while(perf_sim->done() == false){
+            // cout << "Reached running phase" << endl;
             //cout << "\n+++ cycle = "  << cycle << endl;
             perf_sim->run();
+            // cout << "Successfully run a cycle" << endl;
             cycle++;
         }
         cout << "+++ Final cycle = "  << cycle << endl;

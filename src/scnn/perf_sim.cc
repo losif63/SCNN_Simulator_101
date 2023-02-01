@@ -14,9 +14,9 @@ PerfSim::PerfSim(Scnn::ArchConfig& arch_cfg)
 {
 
     // initialize PE and LOADER
-    _pe = (Scnn::PE *)malloc(sizeof(Scnn::PE) * _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W());
+    _pe = new Scnn::PE*[_arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W()];
     for(int i = 0; i < _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W(); i++) {
-        _pe[i] = Scnn::PE(arch_cfg);
+        _pe[i] = new Scnn::PE(arch_cfg);
     }
     _loader = new Scnn::Loader(_arch_cfg);
 
@@ -26,8 +26,11 @@ PerfSim::PerfSim(Scnn::ArchConfig& arch_cfg)
 }
 
 PerfSim::~PerfSim(){
-    free(_pe);
-    delete _loader;
+    for(int i = 0; i < _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W(); i++) {
+        delete _pe[i];
+    }
+    delete _pe;
+    // delete _loader;
 };
 
 void
@@ -37,7 +40,12 @@ PerfSim::run(){
 
 bool
 PerfSim::done() {
-    throw runtime_error("Scnn::PerfSim done() is not yet implemented");
+    // cout << "Reached done()" << endl;
+    bool done = true;
+    for(int i = 0; i < _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W(); i++) {
+        done = done && _pe[i]->done();
+    }
+    return done;
 }
 
 void
@@ -62,8 +70,8 @@ PerfSim::prepare_current_layer(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
     unsigned  max_OA_H  = (max_IA_H - max_R + 2*pad_H_sz)/stride_R + 1;
     unsigned  max_OA_W  = (max_IA_W - max_S + 2*pad_W_sz)/stride_S + 1;
 
-    unsigned  max_H_per_PE = max_OA_H;
-    unsigned  max_W_per_PE = max_OA_W;
+    unsigned  max_H_per_PE = (int)ceil((float)max_OA_H/(float)_arch_cfg.get_pe_arr_H());
+    unsigned  max_W_per_PE = (int)ceil((float)max_OA_W/(float)_arch_cfg.get_pe_arr_W());
         
     // find largest chunk_sz possible for this layer
     float max_num_elem_per_bank_with_base_chunk_sz = ((float)(max_H_per_PE * max_W_per_PE * _arch_cfg.get_chunk_sz_for_accum_bank_sizing())) / (float)_arch_cfg.get_xbar_out();
@@ -105,7 +113,6 @@ PerfSim::prepare_current_layer(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
         (dynamic_cast<dlsim::Weight4d_t*>(W))->dim_sz('S'),
         chunk_sz_for_this_layer
     );
-
     // give loader pointers and distribute data across PE as IA_SLICE
     _loader->setup_IA_W_and_OA(IA, W, OA);
     // **TodoASdw:: Fix this
@@ -116,27 +123,33 @@ PerfSim::prepare_current_layer(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
 
     // setup PE's initial status to get ready for current layer's execution
     // **TodoASdw:: Fix this
-
+    // cout << "Reached before setting up PEs" << endl;
     for(int i = 0; i < _arch_cfg.get_pe_arr_H(); i++) {
         for(int j = 0; j < _arch_cfg.get_pe_arr_W(); j++) {
             unsigned currIndex = i * _arch_cfg.get_pe_arr_W() + j;
-            _pe[currIndex].prepare_current_layer(_loader->IA(), _loader->OA(), _loader->IA_slice()[currIndex], _loader->W(), _layer_cfg);
-            _pe[currIndex]._mult_array->set_pe_arr_h_idx(i);
-            _pe[currIndex]._mult_array->set_pe_arr_w_idx(j);
+            _pe[currIndex]->_mult_array->set_pe_arr_h_idx(i);
+            _pe[currIndex]->_mult_array->set_pe_arr_w_idx(j);
+            // cout << "Reached before PE " << i << ", " << j << " multarray init" << endl;
+            _pe[currIndex]->_mult_array->init(layer_cfg, _loader->IA_slice()[currIndex], _loader->W());
+            // cout << "Reached after PE " << i << ", " << j << " multarray init" << endl;
+            _pe[currIndex]->prepare_current_layer(_loader->IA(), _loader->OA(), _loader->IA_slice()[currIndex], _loader->W(), _layer_cfg);
         }
     }
-};
+    // cout << "Reached after setting up PEs" << endl;
+}
 
 void
 PerfSim::cleanup_current_layer() {
-    throw runtime_error("Scnn::PerfSim cleanup_current_layer() is not yet implemented");
+    for(int i = 0; i < _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W(); i++) {
+        _pe[i]->cleanup_current_layer();
+    }
+    _loader->clear_IA_slice_and_W();
 }
 
 void
 PerfSim::collect_stats() {
-    throw runtime_error("Scnn::PerfSim collect_stats() is not yet implemented");
+    cout << "Collecting stats is yet to be implemented" << endl;
 }
-
 
 void
 PerfSim::cycle(){
@@ -145,10 +158,12 @@ PerfSim::cycle(){
     _cycle_layer++;
 
     // tick PE
-    _pe->cycle();
-};
+    for(int i = 0; i < _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W(); i++) {
+        _pe[i]->cycle();
+    }
+}
 
-PE* PerfSim::get_PE() {
+PE** PerfSim::get_PE() {
     return _pe;
 }
 

@@ -39,6 +39,8 @@ MultArray::MultArray(Scnn::ArchConfig& arch_cfg) {
 
 MultArray::~MultArray() {
     delete _arch_cfg;
+    _IA_slice = NULL;
+    _W = NULL;
 }
 
 
@@ -46,7 +48,7 @@ void MultArray::init(Scnn::LayerConfig& layer_cfg, dlsim::Fmap4d_t* IA_slice, dl
     this->_layer_cfg = layer_cfg;
     this->_IA_slice = IA_slice;
     this->_W = W;
-
+    
     _max_r = layer_cfg.get_R();
     _max_s = layer_cfg.get_S();
     _pad_h_sz = (layer_cfg.get_S() - 1)/2;
@@ -67,7 +69,7 @@ void MultArray::init(Scnn::LayerConfig& layer_cfg, dlsim::Fmap4d_t* IA_slice, dl
 
 /* Empty WFIFO and IARAM */
 void MultArray::clean() {
-
+    clear_both_WFIFO_and_IARAM();
 }
 
 /* Some vectors will not be filled completely --> fill rest with invalid vectors */

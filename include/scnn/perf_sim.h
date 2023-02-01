@@ -35,14 +35,14 @@ public:
 
     void cycle();
 
-    Scnn::PE* get_PE();
+    Scnn::PE** get_PE();
 
 private:
 	Scnn::ArchConfig    _arch_cfg;     // decided by user at the top file.
 	Scnn::LayerConfig   _layer_cfg;
 
 	Scnn::Loader*   _loader;
-	Scnn::PE*       _pe;
+	Scnn::PE**       _pe;
 
     unsigned long long _cycle_network;  // counting model-wide cycle
     unsigned long long _cycle_layer;    // counting layer-wide cycle (e.g., cycle for each layer)
