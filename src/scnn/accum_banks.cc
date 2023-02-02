@@ -45,7 +45,7 @@ AccumulatorBanks::AccumulatorBanks(Scnn::ArchConfig& arch_cfg) {
 
 AccumulatorBanks::~AccumulatorBanks() {
     delete _arch_cfg;
-    // delete _banks;
+    delete[] _banks;
 }
 
 void AccumulatorBanks::cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full, bool flush) {

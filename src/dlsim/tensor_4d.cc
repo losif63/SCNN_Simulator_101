@@ -86,7 +86,7 @@ Tensor4d<T>::Tensor4d(
 // Destructors
 template <class T>
 Tensor4d<T>::~Tensor4d() {
-    delete this->_data;
+    if(this->_data != NULL) delete[] this->_data;
 }
 
 /**********************************************************************/

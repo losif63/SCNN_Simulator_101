@@ -45,7 +45,7 @@ Loader::~Loader() {
         for(int i = 0; i < size; i++) {
             delete _IA_slice[i];
         }
-        delete _IA_slice;
+        delete[] _IA_slice;
     }
     delete _arch_cfg;
 }
@@ -128,7 +128,8 @@ void Loader::clear_IA_slice_and_W() {
     for(int i = 0; i < _arch_cfg->get_pe_arr_H() * _arch_cfg->get_pe_arr_W(); i++) {
         delete _IA_slice[i];
     }
-    delete _IA_slice;
+    delete[] _IA_slice;
+    _IA_slice = NULL;
     _IA = NULL;
     _W = NULL;
     _OA = NULL;

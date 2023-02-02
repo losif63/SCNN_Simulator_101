@@ -39,8 +39,6 @@ MultArray::MultArray(Scnn::ArchConfig& arch_cfg) {
 
 MultArray::~MultArray() {
     delete _arch_cfg;
-    _IA_slice = NULL;
-    _W = NULL;
 }
 
 

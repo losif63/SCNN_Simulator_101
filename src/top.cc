@@ -154,9 +154,9 @@ int main (int argc, char** argv){
     // DO SIMULATION --- "a single layer for a loop"
     cout << "\n+++++++ PERFOMANCE SIMULATION STEP START +++++++" << endl;
     while(dnn_loader.done() == false){
-        cout << "+++ NOW RUN FOR LAYER : Layer # "<< dnn_loader.curr_layer_id() << endl;
         // fetch next layer
         dnn_loader.load_next_layer();
+        cout << "+++ NOW RUN FOR LAYER : Layer # "<< dnn_loader.curr_layer_id() << endl;
         
         // DEBUG
         #ifdef DEBUG
@@ -196,4 +196,5 @@ int main (int argc, char** argv){
     // DONE
     cout << "[DONE]" << endl;
     delete perf_sim;
+    exit(127);
 }

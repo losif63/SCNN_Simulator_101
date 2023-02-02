@@ -29,8 +29,8 @@ PerfSim::~PerfSim(){
     for(int i = 0; i < _arch_cfg.get_pe_arr_H() * _arch_cfg.get_pe_arr_W(); i++) {
         delete _pe[i];
     }
-    delete _pe;
-    // delete _loader;
+    delete[] _pe;
+    delete _loader;
 };
 
 void

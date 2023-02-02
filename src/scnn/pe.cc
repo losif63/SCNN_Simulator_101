@@ -17,7 +17,7 @@ PE::PE(
     _mult_array   = new Scnn::MultArray(arch_cfg);
     _xbar         = new Scnn::Xbar(arch_cfg);
     _oa_banks     = new Scnn::AccumulatorBanks(arch_cfg);    
-    _ppu          = new Scnn::PPU(arch_cfg);  
+    // _ppu          = new Scnn::PPU(arch_cfg);  
 
     _cycle        = 0;
 
@@ -27,12 +27,12 @@ PE::PE(
     _c_cycle_finished_waiting_others    = 0;
 }
 
-PE::~PE(){
+PE::~PE(){ 
     delete    _mult_array;
     delete    _oa_banks;
     delete    _xbar;
     delete    _sequencer;
-    delete    _ppu;
+    // delete    _ppu;
 }
 
 void
