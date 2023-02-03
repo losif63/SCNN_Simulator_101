@@ -233,9 +233,9 @@ void OA_element::accumulate(OA_element elem) {
     }
     /* Check if indices are equal */
     else {
-        // this->print();
-        // elem.print();
         if(_idx != elem.get_idx()) {
+            this->print();
+            elem.print();
             throw runtime_error("ERROR: OUTPUT INDEX INCONSISTENCY IN ACCUMULATOR BUFFER");
             return;
         }

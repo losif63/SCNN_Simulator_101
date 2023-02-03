@@ -283,6 +283,14 @@ int MultArray::accum_addr_in_1d(tensor_4D_idx oa_idx) {
     hash += hash_h * pe_w;
     hash += hash_w;
 
+    unsigned idx = (hash / _arch_cfg->get_xbar_out());
+    if(idx >= _arch_cfg->get_max_num_elem_per_bank()) {
+        cout << "ERROR!! ArrayIndexOutofBounds!! MaxLength: " << _arch_cfg->get_max_num_elem_per_bank() << ", AccumBankNumber: " << _arch_cfg->get_xbar_out() << endl;
+        cout << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << endl;
+        cout << chunk_size << ", " << pe_h << ", " << pe_w << endl;
+        cout << hash_k << ", " << hash_h << ", " << hash_w << endl;
+    }
+
     return hash;
 }
 /* Method that generates bank id from an "accumulator address" */

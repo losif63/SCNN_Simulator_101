@@ -61,6 +61,8 @@ int main (int argc, char** argv){
     unsigned    min_OA_W_per_PE = 1080;
 
     cout << "\n+++++++ PREPROCESSING STEP START : DNN TOPOLOGY ANALYSIS +++++++" << endl;
+    unsigned maxH_layer = 0;
+    unsigned maxW_layer = 0;
     while(dnn_loader.done() == false){
         dnn_loader.load_next_layer();
         dnn_loader.print_layer();
@@ -91,10 +93,12 @@ int main (int argc, char** argv){
         // OA's max H per PE
         if(max_H_per_PE > max_OA_H_per_PE ) {
             max_OA_H_per_PE = max_H_per_PE;
+            maxH_layer = dnn_loader.curr_layer_id();
         }
         // OA's max W per PE
         if(max_W_per_PE > max_OA_W_per_PE) {
             max_OA_W_per_PE = max_W_per_PE ;
+            maxW_layer = dnn_loader.curr_layer_id();
         }
         // OA's min H per PE
         if(max_H_per_PE < min_OA_H_per_PE) {
@@ -113,6 +117,7 @@ int main (int argc, char** argv){
     max_num_elem_per_bank = (int)ceil((float)(max_OA_H_per_PE * max_OA_W_per_PE * chunk_sz_for_accum_bank_sizing) / (float)xbar_out);
     // sanity
     cout << max_OA_H_per_PE << ", " << max_OA_W_per_PE << ", " << chunk_sz_for_accum_bank_sizing << ", " << xbar_out << endl;
+    cout << maxH_layer << ", " << maxW_layer << endl;
     // assert(((max_OA_H_per_PE * max_OA_W_per_PE * chunk_sz_for_accum_bank_sizing) % xbar_out)==0);
 
     cout << "+++++++ PREPROCESSING STEP END : DNN TOPOLOGY ANALYSIS +++++++" << endl;
