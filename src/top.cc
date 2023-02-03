@@ -52,7 +52,7 @@ int main (int argc, char** argv){
     unsigned    xbar_out_num_q_entries_per_phy_ch = 2;
         
     // sram size
-    unsigned    chunk_sz_for_accum_bank_sizing = 2;
+    unsigned    chunk_sz_for_accum_bank_sizing = 32;
     unsigned    max_num_elem_per_bank = 0;
 
     unsigned    max_OA_H_per_PE = 0;

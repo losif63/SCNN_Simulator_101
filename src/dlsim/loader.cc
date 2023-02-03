@@ -68,16 +68,18 @@ void Loader::load_next_layer() {
         weight->randInit();
         Fmap4d_t* output = ((Fmap4d_t*)temp_layer->OFmap());
         output->zeroInit();
-        /* If this is the first layer, generate new data as input */
-        if(_curr_layer == NULL) {
-            Fmap4d_t* input = ((Fmap4d_t *)temp_layer->IFmap());
-            input->randInit();
-        }
-        /* Otherwise, copy output data from previous layer */ 
-        else {
-            ((Fmap4d_t *)temp_layer->IFmap())->
-                copy_data((Fmap4d_t *)_curr_layer->OFmap());
-        }
+        Fmap4d_t* input = ((Fmap4d_t *)temp_layer->IFmap());
+        input->randInit();
+        // /* If this is the first layer, generate new data as input */
+        // if(_curr_layer == NULL) {
+        //     Fmap4d_t* input = ((Fmap4d_t *)temp_layer->IFmap());
+        //     input->randInit();
+        // }
+        // /* Otherwise, copy output data from previous layer */ 
+        // else {
+        //     ((Fmap4d_t *)temp_layer->IFmap())->
+        //         copy_data((Fmap4d_t *)_curr_layer->OFmap());
+        // }
     }
 
     if(_curr_layer != NULL) delete _curr_layer;
