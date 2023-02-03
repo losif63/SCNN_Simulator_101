@@ -1,0 +1,10 @@
+NUM_LAYER: 1
+N: 1
+C: 512
+K: 512
+H: 28
+W: 28
+S: 3
+R: 3
+IA_sparsity: 50
+W_sparsity: 74

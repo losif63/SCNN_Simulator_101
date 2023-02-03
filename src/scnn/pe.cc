@@ -41,18 +41,6 @@ PE::cycle(){
     //================================================================================
     // stats
     _cycle++;
-
-    // if(finished_layer_exec()==true) {
-    //     _c_cycle_finished_waiting_others++;
-    // }
-    // else {
-    //     if(sync_barrier()==true) {
-    //         _c_cycle_waiting_at_barrier++;
-    //     }
-    //     else {
-    //         _c_cycle_active++;
-    //     }
-    // }
     //================================================================================
 
     //================================================================================
@@ -66,7 +54,10 @@ PE::cycle(){
     // (all comp. idle) && (done all this layer) && (all idle)
     // then, IT SHOULD GET REST CHUNK OF WEIGHT SETS
     //================================================================================
-    if(done()) return;
+    if(done()) {
+        _c_cycle_waiting_at_barrier++;
+        return;
+    }
     if(idle()) {
         _mult_array->clear_both_WFIFO_and_IARAM();
         advance_layer();
@@ -76,11 +67,13 @@ PE::cycle(){
         unsigned N_id = (_layer_idx / layer_C) % layer_N;
         unsigned C_id = _layer_idx % layer_C;
         _mult_array->fill_WFIFO_and_IARAM(N_id, C_id, chunk_id);
+        _c_cycle_active++;
         _oa_banks->cycle(_xbar, _OA_full, false);
         _xbar->cycle();
         _mult_array->cycle(_xbar);
     }
     else {
+        _c_cycle_active++;
         _oa_banks->cycle(_xbar, _OA_full, false);
         _xbar->cycle();
         _mult_array->cycle(_xbar);
@@ -138,6 +131,12 @@ void PE::cleanup_current_layer() {
     _OA_full = NULL;
     _IA_slice = NULL;
     _W = NULL;
+
+    _cycle = 0;
+    _c_cycle_waiting_at_barrier         = 0;
+    _c_cycle_active                     = 0;
+    _c_cycle_finished_waiting_others    = 0;
+
 
     _mult_array->clean();
     _oa_banks->clean();

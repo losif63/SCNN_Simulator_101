@@ -35,6 +35,13 @@ MultArray::MultArray(Scnn::ArchConfig& arch_cfg) {
         arch_cfg.get_min_OA_H_per_PE(),
         arch_cfg.get_min_OA_W_per_PE()
     );
+
+    _c_num_of_valid_multops = 0;
+    _c_num_of_nz_act = 0;
+    _c_num_of_nz_w = 0;
+    _c_multiply_ops_completed = 0;
+	_c_cycles_drained_mularray_output = 0;
+	_c_cycles_stalled_due_to_xbar_in_full = 0;
 }
 
 MultArray::~MultArray() {
@@ -68,6 +75,12 @@ void MultArray::init(Scnn::LayerConfig& layer_cfg, dlsim::Fmap4d_t* IA_slice, dl
 /* Empty WFIFO and IARAM */
 void MultArray::clean() {
     clear_both_WFIFO_and_IARAM();
+    _c_num_of_valid_multops = 0;
+    _c_num_of_nz_act = 0;
+    _c_num_of_nz_w = 0;
+    _c_multiply_ops_completed = 0;
+	_c_cycles_drained_mularray_output = 0;
+	_c_cycles_stalled_due_to_xbar_in_full = 0;
 }
 
 /* Some vectors will not be filled completely --> fill rest with invalid vectors */
@@ -164,7 +177,11 @@ void MultArray::check_IA_slice_sanity(dlsim::Fmap4d_t* IA_full, unsigned N_id, u
 // Second, if this multArray is currently idle, then return
 void MultArray::cycle(Scnn::Xbar* xbar) {
     if(idle()) return;
-    if(!xbar->idle()) return;
+    if(!xbar->idle()) {
+        _c_cycles_stalled_due_to_xbar_in_full++;
+        return;
+    }
+    _c_cycles_drained_mularray_output++;
     compute_mul_array_output(xbar);
     advance_to_next_mul_op();
 
@@ -186,6 +203,7 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
     if((_IARAM.size() == 0) || (_WFIFO.size() == 0)) return true;
     for(int i = 0; i < wvec->size(); i++) {
         for(int j = 0; j < iavec->size(); j++) {
+            _c_multiply_ops_completed++;
             /* If either one of WFIFO or IARAM is a dummy, then continue */
             if((*wvec)[i].get_valid() == false) {
                 // DEBUG
@@ -227,6 +245,7 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
             // cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
             // cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
             // cout << "TEST:: Partial Sum [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
+            _c_num_of_valid_multops++;
             OA_element oa_elem(
                 (*wvec)[i].get_valid() && (*iavec)[j].get_valid(),
                 (*wvec)[i].get_data() * (*iavec)[j].get_data(),

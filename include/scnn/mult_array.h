@@ -74,6 +74,7 @@ public:
     void                    set_pe_arr_w_idx(int w);
 
     // stats
+    unsigned                _c_num_of_valid_multops;
     unsigned                _c_num_of_nz_act;
     unsigned                _c_num_of_nz_w;
     unsigned                _c_multiply_ops_completed;
