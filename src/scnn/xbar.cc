@@ -45,7 +45,7 @@ Xbar::Xbar(Scnn::ArchConfig& arch_cfg) {
     _port_out = new VirtualChannel<OA_element>;
     
     _port_in->init(_num_port_in, 1);
-    _port_out->init(_num_port_out, 100);
+    _port_out->init(_num_port_out, 3);
     
 }
 

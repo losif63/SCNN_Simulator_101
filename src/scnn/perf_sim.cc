@@ -149,29 +149,42 @@ PerfSim::cleanup_current_layer() {
 void
 PerfSim::collect_stats() {
     unsigned long long cycle = 0;
+    unsigned long long stall_cycle = 0;
     unsigned long long active_cycle = 0;
     unsigned long long barrier_cycle = 0;
+
+    unsigned long long total_multops = 0;
+    unsigned long long valid_multops = 0;
     for(int i = 0; i < _arch_cfg.get_pe_arr_H(); i++) {
         for(int j = 0; j < _arch_cfg.get_pe_arr_W(); j++) {
             cout << "PE index (" << i << ", " << j << ") ----- Total cycles spent: ";
             cout << _pe[i * _arch_cfg.get_pe_arr_W() + j]->_cycle;
             cout << " ----- Number of cycles active: " << _pe[i * _arch_cfg.get_pe_arr_W() + j]->_c_cycle_active;
+            cout << " ----- Number of cycles stalled: " << _pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_cycles_stalled_due_to_xbar_in_full;
             cout << " ----- Number of cycles blocked: " << _pe[i * _arch_cfg.get_pe_arr_W() + j]->_c_cycle_waiting_at_barrier;
-            cout << " ----- Active cycle Ratio: " << (float)((float)_pe[i * _arch_cfg.get_pe_arr_W() + j]->_c_cycle_active / (float)_pe[i * _arch_cfg.get_pe_arr_W() + j]->_cycle) * 100.0 << endl;
+            cout << " ----- Active cycle Ratio: " << (float)((float)(_pe[i * _arch_cfg.get_pe_arr_W() + j]->_c_cycle_active - _pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_cycles_stalled_due_to_xbar_in_full) / (float)_pe[i * _arch_cfg.get_pe_arr_W() + j]->_cycle) * 100.0 << endl;
             cycle += _pe[i * _arch_cfg.get_pe_arr_W() + j]->_cycle;
+            stall_cycle += _pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_cycles_stalled_due_to_xbar_in_full;
             active_cycle += _pe[i * _arch_cfg.get_pe_arr_W() + j]->_c_cycle_active;
             barrier_cycle += _pe[i * _arch_cfg.get_pe_arr_W() + j]->_c_cycle_waiting_at_barrier;
 
             cout << "PE index (" << i << ", " << j << ") ----- Total Multops: ";
             cout << _pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_multiply_ops_completed;
             cout << " ----- Number of valid multops: " << _pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_num_of_valid_multops;
+            total_multops += _pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_multiply_ops_completed;
+            valid_multops += _pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_num_of_valid_multops;
             cout << "----- Valid Multops Ratio: " << (float)((float)(_pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_num_of_valid_multops) / (float)(_pe[i * _arch_cfg.get_pe_arr_W() + j]->get_mult()->_c_multiply_ops_completed)) * 100.0 << endl;
         }
     }
     cout << endl;
     cout << "Total cycles spent: " << cycle << endl;
     cout << "Total active cycles: " << active_cycle << endl;
+    cout << "Total stalled cycles: " << stall_cycle << endl;
     cout << "Total blocked cycles: " << barrier_cycle << endl << endl;
+
+    cout << "Total multiplication operations: " << total_multops << endl;
+    cout << "Valid multiplication operations: " << valid_multops << endl;
+
 
 }
 

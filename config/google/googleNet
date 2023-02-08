@@ -1,0 +1,120 @@
+NUM_LAYER: 12
+N: 1
+C: 192
+K: 64
+H: 28
+W: 28
+S: 1
+R: 1
+IA_sparsity: 29
+W_sparsity: 62
+
+N: 1
+C: 96
+K: 128
+H: 28
+W: 28
+S: 1
+R: 1
+IA_sparsity: 33
+W_sparsity: 55
+
+N: 1
+C: 192
+K: 96
+H: 28
+W: 28
+S: 1
+R: 1
+IA_sparsity: 29
+W_sparsity: 58
+
+N: 1
+C: 16
+K: 32
+H: 28
+W: 28
+S: 1
+R: 1
+IA_sparsity: 23
+W_sparsity: 65
+
+N: 1
+C: 192
+K: 16
+H: 28
+W: 28
+S: 1
+R: 1
+IA_sparsity: 29
+W_sparsity: 64
+
+N: 1
+C: 192
+K: 32
+H: 28
+W: 28
+S: 1
+R: 1
+IA_sparsity: 4
+W_sparsity: 57
+
+N: 1
+C: 832
+K: 384
+H: 7
+W: 7
+S: 1
+R: 1
+IA_sparsity: 69
+W_sparsity: 68
+
+N: 1
+C: 192
+K: 384
+H: 7
+W: 7
+S: 3
+R: 3
+IA_sparsity: 70
+W_sparsity: 63
+
+N: 1
+C: 832
+K: 192
+H: 7
+W: 7
+S: 1
+R: 1
+IA_sparsity: 69
+W_sparsity: 67
+
+N: 1
+C: 48
+K: 128
+H: 7
+W: 7
+S: 5
+R: 5
+IA_sparsity: 54
+W_sparsity: 64
+
+N: 1
+C: 832
+K: 48
+H: 7
+W: 7
+S: 1
+R: 1
+IA_sparsity: 69
+W_sparsity: 67
+
+N: 1
+C: 832
+K: 128
+H: 7
+W: 7
+S: 1
+R: 1
+IA_sparsity: 43
+W_sparsity: 68

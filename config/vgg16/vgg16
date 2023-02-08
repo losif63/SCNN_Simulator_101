@@ -56,16 +56,6 @@ H: 56
 W: 56
 S: 3
 R: 3
-IA_sparsity: 19
-W_sparsity: 47
-
-N: 1
-C: 256
-K: 256
-H: 56
-W: 56
-S: 3
-R: 3
 IA_sparsity: 37
 W_sparsity: 78
 
@@ -81,16 +71,16 @@ W_sparsity: 59
 
 N: 1
 C: 256
-K: 512
-H: 28
-W: 28
+K: 256
+H: 56
+W: 56
 S: 3
 R: 3
 IA_sparsity: 29
 W_sparsity: 68
 
 N: 1
-C: 512
+C: 256
 K: 512
 H: 28
 W: 28
