@@ -70,34 +70,11 @@ PerfSim::prepare_current_layer(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
     unsigned  max_OA_H  = (max_IA_H - max_R + 2*pad_H_sz)/stride_R + 1;
     unsigned  max_OA_W  = (max_IA_W - max_S + 2*pad_W_sz)/stride_S + 1;
 
-    unsigned  max_H_per_PE = (int)ceil((float)max_OA_H/(float)_arch_cfg.get_pe_arr_H());
-    unsigned  max_W_per_PE = (int)ceil((float)max_OA_W/(float)_arch_cfg.get_pe_arr_W());
-        
-    // find largest chunk_sz possible for this layer
-    // float max_num_elem_per_bank_with_base_chunk_sz = ((float)(max_H_per_PE * max_W_per_PE * _arch_cfg.get_chunk_sz_for_accum_bank_sizing())) / (float)_arch_cfg.get_xbar_out();
-    // if(max_num_elem_per_bank_with_base_chunk_sz<1.0) {
-    //     max_num_elem_per_bank_with_base_chunk_sz  = 1.0;
-    // }
-
-    // // sanity  == should be lower than max
-    // assert(max_num_elem_per_bank_with_base_chunk_sz <= _arch_cfg.get_max_num_elem_per_bank());
-    // assert(max_num_elem_per_bank_with_base_chunk_sz > 0);
-
-    // // chunk_sz has to be pow(2)
-    // unsigned chunk_sz_for_this_layer  = _arch_cfg.get_chunk_sz_for_accum_bank_sizing();
-        
-    // while(max_num_elem_per_bank_with_base_chunk_sz < _arch_cfg.get_max_num_elem_per_bank()){
-    //     max_num_elem_per_bank_with_base_chunk_sz  *= 2;
-    //     chunk_sz_for_this_layer                   *= 2;
-    // }
-    // if(max_num_elem_per_bank_with_base_chunk_sz > _arch_cfg.get_max_num_elem_per_bank()) {
-    //     max_num_elem_per_bank_with_base_chunk_sz  /= 2;
-    //     chunk_sz_for_this_layer                   /= 2;
-    // }
-    // // sanity
-    // assert(max_num_elem_per_bank_with_base_chunk_sz<=_arch_cfg.get_max_num_elem_per_bank());
-    // cout << "Actual chunk size: " << chunk_sz_for_this_layer << endl;
-    //DEBUG
+    // unsigned  max_H_per_PE = (int)ceil((float)max_OA_H/(float)_arch_cfg.get_pe_arr_H());
+    // unsigned  max_W_per_PE = (int)ceil((float)max_OA_W/(float)_arch_cfg.get_pe_arr_W());
+    unsigned  max_H_per_PE = _arch_cfg.get_max_OA_H_per_PE();
+    unsigned  max_W_per_PE = _arch_cfg.get_max_OA_W_per_PE();
+    
     #ifdef DEBUG
     cout << "chunk_sz_for_this_layer = " << chunk_sz_for_this_layer << endl;
     cout << "max_num_elem_per_bank_with_base_chunk_sz = " << max_num_elem_per_bank_with_base_chunk_sz << endl;

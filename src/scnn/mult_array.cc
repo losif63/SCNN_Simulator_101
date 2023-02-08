@@ -66,10 +66,18 @@ void MultArray::init(Scnn::LayerConfig& layer_cfg, dlsim::Fmap4d_t* IA_slice, dl
     _max_OA_w = _max_IA_w + (2 * _pad_w_sz) - _max_r + 1;
     _max_OA_H_per_PE = (int)ceil((float)_max_OA_h/(float)_arch_cfg->get_pe_arr_H());
     _max_OA_W_per_PE = (int)ceil((float)_max_OA_w/(float)_arch_cfg->get_pe_arr_W());
+    #ifdef INPUT_HALO_
     _base_offset_h_in_OA = _max_OA_H_per_PE * _pe_arr_h_idx;
     _base_offset_w_in_OA = _max_OA_W_per_PE * _pe_arr_w_idx;
-    _max_idx_h_in_OA = _max_OA_H_per_PE * (_pe_arr_h_idx + 1) - 1;
-    _max_idx_w_in_OA = _max_OA_W_per_PE * (_pe_arr_w_idx + 1) - 1;
+    _max_idx_h_in_OA = ((_max_OA_H_per_PE * (_pe_arr_h_idx + 1) - 1) < (_layer_cfg.get_H() - 1)) ? _max_OA_H_per_PE * (_pe_arr_h_idx + 1) - 1 : _layer_cfg.get_H() - 1;
+    _max_idx_w_in_OA = ((_max_OA_W_per_PE * (_pe_arr_w_idx + 1) - 1) < (_layer_cfg.get_W() - 1)) ? _max_OA_W_per_PE * (_pe_arr_w_idx + 1) - 1 : _layer_cfg.get_W() - 1;
+    #endif
+    #ifdef OUTPUT_HALO_
+    _base_offset_h_in_OA = _max_OA_H_per_PE * _pe_arr_h_idx - _pad_h_sz >= 0 ? _max_OA_H_per_PE * _pe_arr_h_idx - _pad_h_sz : 0 ;
+    _base_offset_w_in_OA = _max_OA_W_per_PE * _pe_arr_w_idx - _pad_w_sz >= 0 ? _max_OA_W_per_PE * _pe_arr_w_idx - _pad_w_sz : 0 ;
+    _max_idx_h_in_OA = ((_max_OA_H_per_PE * (_pe_arr_h_idx + 1) - 1 + _pad_h_sz) < (_layer_cfg.get_H() - 1)) ? _max_OA_H_per_PE * (_pe_arr_h_idx + 1) - 1 + _pad_h_sz : _layer_cfg.get_H() - 1;
+    _max_idx_w_in_OA = ((_max_OA_W_per_PE * (_pe_arr_w_idx + 1) - 1 + _pad_w_sz) < (_layer_cfg.get_W() - 1)) ? _max_OA_W_per_PE * (_pe_arr_w_idx + 1) - 1 + _pad_w_sz : _layer_cfg.get_W() - 1;
+    #endif
 }
 
 /* Empty WFIFO and IARAM */
@@ -135,8 +143,14 @@ void MultArray::fill_WFIFO_and_IARAM(unsigned N_id, unsigned C_id, unsigned chun
     while(index < slice_H * slice_W){
         int hIndex = index / slice_W;
         int wIndex = index % slice_W;
+        #ifdef INPUT_HALO_
         int actualH = hIndex - _pad_h_sz + _base_offset_h_in_OA;
         int actualW = wIndex - _pad_w_sz + _base_offset_w_in_OA;
+        #endif
+        #ifdef OUTPUT_HALO_
+        int actualH = hIndex + (_max_OA_H_per_PE * _pe_arr_h_idx) - _pad_h_sz;
+        int actualW = wIndex + (_max_OA_W_per_PE * _pe_arr_w_idx) - _pad_w_sz;
+        #endif
         if(_IA_slice->get_data(N_id, C_id, hIndex, wIndex) != 0.0) {
             IA_element ia_elem(true, _IA_slice->get_data(N_id, C_id, hIndex, wIndex), tuple<int, int, int, int>(N_id, C_id, actualH, actualW));
             IAvec->push_back(ia_elem);
@@ -226,16 +240,16 @@ bool MultArray::compute_mul_array_output(Scnn::Xbar* xbar) {
             /* If the resulting H and W values are not in range,
                Do not create an OA_element and just simply continue.
             */
-           int max_h_idx = (_max_idx_h_in_OA < (_layer_cfg.get_H() - 1)) ? _max_idx_h_in_OA : _layer_cfg.get_H() - 1;
-           int max_w_idx = (_max_idx_w_in_OA < (_layer_cfg.get_W() - 1)) ? _max_idx_w_in_OA : _layer_cfg.get_W() - 1;
-            if((get<2>(oa_idx) < _base_offset_h_in_OA) || (get<2>(oa_idx) > max_h_idx)) {
+        //    int max_h_idx = (_max_idx_h_in_OA < (_layer_cfg.get_H() - 1)) ? _max_idx_h_in_OA : _layer_cfg.get_H() - 1;
+        //    int max_w_idx = (_max_idx_w_in_OA < (_layer_cfg.get_W() - 1)) ? _max_idx_w_in_OA : _layer_cfg.get_W() - 1;
+            if((get<2>(oa_idx) < _base_offset_h_in_OA) || (get<2>(oa_idx) > _max_idx_h_in_OA)) {
                 //DEBUG
                 // cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
                 // cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
                 // cout << "H not in range " << _base_offset_h_in_OA << " ~ " << max_h_idx << " [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;
                 continue;
             }
-            if((get<3>(oa_idx) < _base_offset_w_in_OA) || (get<3>(oa_idx) > max_w_idx)) {
+            if((get<3>(oa_idx) < _base_offset_w_in_OA) || (get<3>(oa_idx) > _max_idx_w_in_OA)) {
                 // cout << "Input [" << get<0>((*iavec)[j].get_idx()) << ", " << get<1>((*iavec)[j].get_idx()) << ", " << get<2>((*iavec)[j].get_idx()) << ", " << get<3>((*iavec)[j].get_idx()) << ", " << (*iavec)[j].get_data() << "] | ";
                 // cout << "Weight [" << get<0>((*wvec)[i].get_idx()) << ", " << get<1>((*wvec)[i].get_idx()) << ", " << get<2>((*wvec)[i].get_idx()) << ", " << get<3>((*wvec)[i].get_idx()) << ", " << (*wvec)[i].get_data() << "] | ";
                 // cout << "W not in range " << _base_offset_w_in_OA << " ~ " << max_w_idx << " [" << get<0>(oa_idx) << ", " << get<1>(oa_idx) << ", " << get<2>(oa_idx) << ", " << get<3>(oa_idx) << ", " << (*wvec)[i].get_data() * (*iavec)[j].get_data() << "]" << endl;

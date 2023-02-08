@@ -258,6 +258,7 @@ for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
         // cout << "current i, j: " << i << " " << j << endl;
         for(int n = 0; n < slice->dim_sz('N'); n++) {
             for(int c = 0; c < slice->dim_sz('C'); c++) {
+                #ifdef INPUT_HALO_
                 for(int h = 0; h < slice->dim_sz('H'); h++) {
                     for(int w = 0; w < slice->dim_sz('W'); w++) {
                         // cout << "Current nchw:" << n << " " << c << " " << h << " " << w << endl;
@@ -278,6 +279,27 @@ for(int i = 0; i < arch_config.get_pe_arr_H(); i++) {
                         }
                     }
                 }
+                #endif
+                #ifdef OUTPUT_HALO_
+                for(int h = 0; h < slice->dim_sz('H'); h++) {
+                    for(int w = 0; w < slice->dim_sz('W'); w++) {
+                        // cout << "Current nchw:" << n << " " << c << " " << h << " " << w << endl;
+                        int actual_H = i * new_H + h - ((layerConfig1.get_S() - 1) / 2);
+                        int actual_W = j * new_W + w - ((layerConfig1.get_R() - 1) / 2);
+                        if((h < ((layerConfig1.get_S() - 1) / 2)) || (h >= ((layerConfig1.get_S() - 1) / 2) + new_H) || (w < ((layerConfig1.get_R() - 1) / 2)) || (w >= ((layerConfig1.get_R() - 1) / 2) + new_W)) {
+                            if(slice->get_data(n, c, h, w) != 0.0) {
+                            allClear = false;
+                            cout << "ERROR CODE 1013: " << slice->get_data(n, c, h, w) << endl;
+                        }
+                        }
+                        else if(slice->get_data(n, c, h, w) != loader->current_layer()->IFmap()->get_data(n, c, actual_H, actual_W)) {
+                            allClear = false;
+                            cout << "ERROR CODE 1012: " << slice->get_data(n, c, h, w) << ", " << loader->current_layer()->IFmap()->get_data(n, c, actual_H, actual_W) << endl;
+                            cout << "(" << i << ", " << j << "), " << n << ", " << c << ", " << h << ", " << w << "|| " << actual_H << ", " << actual_W << endl; 
+                        }
+                    }
+                }
+                #endif
             }
         }
         test<bool>(allClear, true);
@@ -305,7 +327,7 @@ Scnn::AccumulatorBanks accum_bank(arch_config);
 /* MultArray */
 cout << "-----------------------------------------------------------\n";
 cout << "Testing Scnn::MultArray class:" << endl; 
-
+// loader_scnn->IA()->print();
 /* Check whether the indices in the WFIFO and IARAM are correctly set */
 for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
     for(int pe_w = 0; pe_w < arch_config.get_pe_arr_W(); pe_w++) {
@@ -317,7 +339,6 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
         mult.init(layerConfig1, loader_scnn->IA_slice()[pe_h * arch_config.get_pe_arr_W() + pe_w], loader_scnn->W());
         // loader_scnn->W()->print();
         bool WFIFO_pass = true;
-
         for(unsigned C_id = 0; C_id < layerConfig1.get_C(); C_id++) {
             for(unsigned chunk_id = 0; chunk_id < layerConfig1.get_K()/layerConfig1.get_chunk_sz(); chunk_id++) {
                 mult.fill_WFIFO_and_IARAM(0, C_id, chunk_id);
@@ -341,7 +362,6 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
         test<bool>(true, WFIFO_pass);
         /* Test IARAM */
         bool IARAM_pass = true;
-        // loader_scnn->IA()->print();
         int slice_id = pe_h * arch_config.get_pe_arr_W() + pe_w;
         // mult.init(layerConfig1, loader_scnn->IA_slice()[slice_id], loader_scnn->W());
         // loader_scnn->IA_slice()[slice_id]->print();
@@ -351,11 +371,12 @@ for(int pe_h = 0; pe_h < arch_config.get_pe_arr_H(); pe_h++) {
                 int size = mult.size_IARAM();
                 for(int temp = 0; temp < size; temp++) {
                     for(int i = 0; i < mult.curr_IARAM_entry()->size(); i++) {
-                        // (*mult.curr_IARAM_entry())[i].print();
                         if((*mult.curr_IARAM_entry())[i].get_valid() == false) continue;
                         tuple<int, int, int, int> idx = (*mult.curr_IARAM_entry())[i].get_idx();
+                        // (*mult.curr_IARAM_entry())[i].print();
                         if((*mult.curr_IARAM_entry())[i].get_data() != loader_scnn->IA()->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx))) {
                             IARAM_pass = false;
+                            (*mult.curr_IARAM_entry())[i].print();
                             cout << "ERROR DETECTED IN IARAM!!!!" << endl;
                         }
                     }

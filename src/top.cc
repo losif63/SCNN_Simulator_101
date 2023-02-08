@@ -86,6 +86,7 @@ int main (int argc, char** argv){
         unsigned  max_OA_H  = (max_IA_H - max_R + 2*pad_H_sz)/stride_R + 1;
         unsigned  max_OA_W  = (max_IA_W - max_S + 2*pad_W_sz)/stride_S + 1;
 
+        // This is how the inputs are tiled into the PE array
         unsigned  max_H_per_PE = (int)ceil((float)max_OA_H/(float)pe_arr_H) + max_S - 1;
         unsigned  max_W_per_PE = (int)ceil((float)max_OA_W/(float)pe_arr_W) + max_R - 1;
         

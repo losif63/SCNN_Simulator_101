@@ -57,7 +57,7 @@ void Loader::setup_IA_W_and_OA(dlsim::Tensor* IA, dlsim::Tensor* W, dlsim::Tenso
 }
 
 void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
-    // For now, we'll be doing input halo
+    // This is how input activations are tiled
     int new_H = (int)ceil(((float)layer_cfg.get_H() / (float)_arch_cfg->get_pe_arr_H()));
     int new_W = (int)ceil(((float)layer_cfg.get_W() / (float)_arch_cfg->get_pe_arr_W()));
     // int new_H = ((layer_cfg.get_H() + layer_cfg.get_S() - 1) / _arch_cfg->get_pe_arr_H()) + 1;
@@ -80,6 +80,7 @@ void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
             );
             _IA_slice[currIndex]->zeroInit();
             // _IA_slice[currIndex]->print();
+            #ifdef INPUT_HALO_
             for(int k = 0; k < H_per_PE; k++) {
                 for(int l = 0; l < W_per_PE; l++) {
                     int actual_H = i * new_H + k - ((layer_cfg.get_S() - 1) / 2);
@@ -87,9 +88,9 @@ void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
                     // cout << "(k, l): ("<< k << ", " << l;
                     // cout << ") | (actual_H, actual_W): ("<< actual_H << ", " << actual_W << ")" << endl;
                     // check if (actual_H, actual_W is in actual range)
-                    for(int i2 = 0; i2 < layer_cfg.get_N(); i2++) {
-                        for(int j2 = 0; j2 < layer_cfg.get_C(); j2++) {
-                            if(((actual_H >= 0) && (actual_H < layer_cfg.get_H())) && ((actual_W >= 0) && (actual_W < layer_cfg.get_W()))) {
+                    if(((actual_H >= 0) && (actual_H < layer_cfg.get_H())) && ((actual_W >= 0) && (actual_W < layer_cfg.get_W()))) {
+                        for(int i2 = 0; i2 < layer_cfg.get_N(); i2++) {
+                            for(int j2 = 0; j2 < layer_cfg.get_C(); j2++) {
                                 _IA_slice[currIndex]->set_data(
                                     i2, 
                                     j2, 
@@ -103,7 +104,11 @@ void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
                                     )
                                 );
                             }
-                            else {
+                        }
+                    }
+                    else {
+                        for(int i2 = 0; i2 < layer_cfg.get_N(); i2++) {
+                            for(int j2 = 0; j2 < layer_cfg.get_C(); j2++) {
                                 _IA_slice[currIndex]->set_data(
                                     i2, 
                                     j2, 
@@ -116,6 +121,31 @@ void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
                     }
                 }
             }
+            #endif
+            #ifdef OUTPUT_HALO_
+            for(int k = 0; k < new_H; k++) {
+                for(int l = 0; l < new_W; l++) {
+                    int actual_H = i * new_H + k;
+                    int actual_W = j * new_W + l;
+                    for(int i2 = 0; i2 < layer_cfg.get_N(); i2++) {
+                        for(int j2 = 0; j2 < layer_cfg.get_C(); j2++) {
+                            _IA_slice[currIndex]->set_data(
+                                i2, 
+                                j2, 
+                                k + ((layer_cfg.get_S() - 1) / 2), 
+                                l + ((layer_cfg.get_R() - 1) / 2),
+                                _IA->get_data(
+                                    i2, 
+                                    j2, 
+                                    actual_H, 
+                                    actual_W
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+            #endif
             // _IA_slice[currIndex]->print();
         }
     }

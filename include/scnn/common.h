@@ -1,7 +1,7 @@
 #ifndef SCNN_COMMON_H_
 #define SCNN_COMMON_H_
 
-#define INPUT_HALO_
+// #define INPUT_HALO_
 #ifndef INPUT_HALO_
 #define OUTPUT_HALO_
 #endif

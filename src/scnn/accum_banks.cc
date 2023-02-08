@@ -57,6 +57,7 @@ void AccumulatorBanks::cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full, bool fl
             if(elem.get_init() == false) continue;
             else {
                 tuple<int, int, int, int> idx = elem.get_idx();
+                #ifdef INPUT_HALO_
                 OA_full->set_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx), elem.get_data());
                 // DEBUG
                 // cout << "Flushed to OA layer----";
@@ -64,6 +65,16 @@ void AccumulatorBanks::cycle(Scnn::Xbar* xbar, dlsim::Fmap4d_t* OA_full, bool fl
                 // << ", " << get<1>(idx) << ", " << get<2>(idx) << ", "
                 // << get<3>(idx) << "]" << " ";
                 // cout << OA_full->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx)) << " ------ " << endl;
+                #endif
+                #ifdef OUTPUT_HALO_
+                OA_full->add_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx), elem.get_data());
+                // DEBUG
+                // cout << "Flushed to OA layer----";
+                // cout << "[" << get<0>(idx) 
+                // << ", " << get<1>(idx) << ", " << get<2>(idx) << ", "
+                // << get<3>(idx) << "]" << " ";
+                // cout << OA_full->get_data(get<0>(idx), get<1>(idx), get<2>(idx), get<3>(idx)) << " ------ " << endl;
+                #endif
             }
         }
         clean();

@@ -193,6 +193,27 @@ void Tensor4d<T>::set_data(
     // cout << "Setting data successful" << endl;
 }
 
+/* Adds data of tensor at given index */
+template <class T>
+void Tensor4d<T>::add_data(
+    unsigned    dim1,
+    unsigned    dim2,
+    unsigned    dim3,
+    unsigned    dim4,
+    T           init_value
+) {
+    unsigned stride[4];
+    stride[0] = dim_sz(_dim_key[1]) * dim_sz(_dim_key[2]) * dim_sz(_dim_key[3]);
+    stride[1] = dim_sz(_dim_key[2]) * dim_sz(_dim_key[3]);
+    stride[2] = dim_sz(_dim_key[3]);
+    stride[3] = 1;
+    // cout << "Write Limit: " << this->_size-1 << endl;
+    // cout << "Calculated index: " << dim1 * stride[0] + dim2 * stride[1] + dim3 * stride[2] + dim4 * stride[3] << endl;
+    TENSOR_4D_INDEX_AT(_data, stride, dim1, dim2, dim3, dim4) 
+        += init_value;
+    // cout << "Adding data successful" << endl;
+}
+
 template <class T>
 T Tensor4d<T>::get_data(
     unsigned    dim1,
