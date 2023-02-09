@@ -11,10 +11,10 @@ valid_multops = np.zeros(layers.size, dtype=int)
 mult_util = np.zeros(layers.size, dtype=float)
 
 for layerIndex in range(layers.size):
-    f = open("Results/vgg16/VGG16_" + layers[layerIndex])
+    # f = open("Results/vgg16/VGG16_" + layers[layerIndex])
     # f = open("Results/vgg16/VGG16_" + layers[layerIndex] + "_ver3x3")
     # f = open("Results/vgg16/VGG16_" + layers[layerIndex] + "_ver4x4")
-    # f = open("Results/vgg16/VGG16_" + layers[layerIndex] + "_ver8x8")
+    f = open("Results/vgg16/VGG16_" + layers[layerIndex] + "_ver8x8_OUTPUT_halo")
     for line in f.readlines():
         print(line)
         if ('Total cycles spent:' in line) and ('-' not in line):
