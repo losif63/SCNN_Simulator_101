@@ -4,7 +4,7 @@ C: 16
 K: 32
 H: 28
 W: 28
-S: 1
-R: 1
+S: 5
+R: 5
 IA_sparsity: 23
 W_sparsity: 65

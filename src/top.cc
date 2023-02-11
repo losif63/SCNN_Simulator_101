@@ -37,8 +37,8 @@ int main (int argc, char** argv){
     unsigned    pe_arr_H = 8;
 
     // pe & mult_array -> Multiplier Array
-    unsigned    mult_arr_F = 4;
-    unsigned    mult_arr_I = 4;
+    unsigned    mult_arr_F = 2;
+    unsigned    mult_arr_I = 2;
         
     // x-bar -> crossbar
     unsigned    xbar_in = mult_arr_F * mult_arr_I; 
