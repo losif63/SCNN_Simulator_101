@@ -127,20 +127,22 @@ void Loader::distribute_IA_across_spatial_PEs(Scnn::LayerConfig& layer_cfg) {
                 for(int l = 0; l < new_W; l++) {
                     int actual_H = i * new_H + k;
                     int actual_W = j * new_W + l;
-                    for(int i2 = 0; i2 < layer_cfg.get_N(); i2++) {
-                        for(int j2 = 0; j2 < layer_cfg.get_C(); j2++) {
-                            _IA_slice[currIndex]->set_data(
-                                i2, 
-                                j2, 
-                                k + ((layer_cfg.get_S() - 1) / 2), 
-                                l + ((layer_cfg.get_R() - 1) / 2),
-                                _IA->get_data(
+                    if(((actual_H >= 0) && (actual_H < layer_cfg.get_H())) && ((actual_W >= 0) && (actual_W < layer_cfg.get_W()))) {
+                        for(int i2 = 0; i2 < layer_cfg.get_N(); i2++) {
+                            for(int j2 = 0; j2 < layer_cfg.get_C(); j2++) {
+                                _IA_slice[currIndex]->set_data(
                                     i2, 
                                     j2, 
-                                    actual_H, 
-                                    actual_W
-                                )
-                            );
+                                    k + ((layer_cfg.get_S() - 1) / 2), 
+                                    l + ((layer_cfg.get_R() - 1) / 2),
+                                    _IA->get_data(
+                                        i2, 
+                                        j2, 
+                                        actual_H, 
+                                        actual_W
+                                    )
+                                );
+                            }
                         }
                     }
                 }
