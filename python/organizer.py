@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 vgg = [
     "conv1_1", "conv1_2", 
@@ -15,25 +16,33 @@ google = [
 ]
 
 options = [
-    "ver8x8_OUTPUT_halo", "ver4x4_OUTPUT_halo", "ver2x2_OUTPUT_halo", "ver1x1_OUTPUT_halo",
-    "ver8x8", "ver4x4", "ver2x2", "ver1x1",
-    "Xbar_scaleout_4_OUTPUT_halo", "Xbar_scaleout_1_OUTPUT_halo",
-    "FI8x8_OUTPUT_halo", "FI2x2_OUTPUT_halo"
+    "ver8x8_OUTPUT_halo", 
+    "ver4x4_OUTPUT_halo", 
+    "ver2x2_OUTPUT_halo", 
+    "ver1x1_OUTPUT_halo",
+    "ver8x8",
+    "Xbar_scaleout_4_OUTPUT_halo", 
+    "Xbar_scaleout_1_OUTPUT_halo",
+    "FI8x8_OUTPUT_halo", 
+    "FI2x2_OUTPUT_halo",
+    "xbar_outq_16", 
+    "xbar_outq_4"
 ]
 
 vgg_layers = []
 google_layers = []
-df_array = []
+vgg_df_array = []
+google_df_array = []
 
-for layer in vgg:
-    for option in options:
+for option in tqdm(options):
+    for layer in tqdm(vgg):
         vgg_layers.append(layer + "_" + option)
 
-for layer in google:
-    for option in options:
+for option in tqdm(options):
+    for layer in tqdm(google):
         google_layers.append(layer + "_" + option)
 
-for layer in vgg_layers:
+for layer in tqdm(vgg_layers):
     fileName = "Results/vgg16/VGG16_" + layer
     # print(fileName)
     f = open(fileName)
@@ -85,16 +94,16 @@ for layer in vgg_layers:
         dataframe.append(data_line)
     df = pd.DataFrame(dataframe, index=index, columns=columns)
     if(len(layer) <= 31):
-        df_array.append([df, layer])
+        vgg_df_array.append([df, layer])
     else:
-        df_array.append([df, layer[0:31]])
+        vgg_df_array.append([df, layer[0:31]])
 
 with pd.ExcelWriter("VGGResult.xlsx") as writer:
-    for df in df_array:
+    for df in vgg_df_array:
         df[0].to_excel(writer, sheet_name=df[1])
 
 
-for layer in google_layers:
+for layer in tqdm(google_layers):
     fileName = "Results/google/inception_" + layer
     # print(fileName)
     f = open(fileName)
@@ -146,12 +155,12 @@ for layer in google_layers:
         dataframe.append(data_line)
     df = pd.DataFrame(dataframe, index=index, columns=columns)
     if(len(layer) <= 31):
-        df_array.append([df, layer])
+        google_df_array.append([df, layer])
     else:
-        df_array.append([df, layer[0:31]])
+        google_df_array.append([df, layer[0:31]])
 
 with pd.ExcelWriter("GoogleResult.xlsx") as writer:
-    for df in df_array:
+    for df in google_df_array:
         df[0].to_excel(writer, sheet_name=df[1])
 
 

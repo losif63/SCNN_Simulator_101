@@ -180,11 +180,14 @@ int main (int argc, char** argv){
         unsigned cycle = 0;
         //cout << "+++ cycle = "  << cycle << endl;
         while(perf_sim->done() == false){
+            if(cycle % 512 == 0) cerr << "Current cycle: " << cycle;
             // cout << "Reached running phase" << endl;
             //cout << "\n+++ cycle = "  << cycle << endl;
             perf_sim->run();
             // cout << "Successfully run a cycle" << endl;
+            if(cycle % 512 == 0) cerr << "\r";
             cycle++;
+            
         }
         cout << "+++ Final cycle = "  << cycle << endl;
 

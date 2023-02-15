@@ -1,46 +1,70 @@
-<h1 align="center"> VIA_newcomers_101_cycle_level_simulator 👋 </h1>
-<p>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" />
-  <img src="https://img.shields.io/badge/node-%3E%3D9.3.0-blue.svg" />
-  <a href="https://sites.google.com/view/youngeunkwon" target="_blank">
-    <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
-  </a>
-  <a href="https://github.com/kefranabg/readme-md-generator/graphs/commit-activity" target="_blank">
-    <img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" />
-  </a>
-</p>
+# SCNN Cycle-Level Simulator
+> Template provided by 👨🏻‍🤝‍👨🏻 **[Ranggi Hwang](https://sites.google.com/view/ranggihwang/) & [Jinha Chung](https://sites.google.com/view/jinhachung)** from [VIA lab](https://sites.google.com/view/kaist-via/home)
 
->Welcome to VIA Research Group!!  
->This cycle level simulator project is for for VIA newcomers.  
->Your mission is to implement SCNN cycle-level simulator.  
+> EE495 Individual Research Project
+  
+### Author Info
+* [Jaduk Suh](https://github.com/losif63), student of School of Computing (SoC) & Electrical Engineering (EE) at Korean Advanced Institute of Science and Technology (KAIST)
 
-## Mission
-#####
+### Development Info
+* C/C++
+* Python3
+* Makefile / Shell script
 
-### 🗝 [Detailed document](https://app.nuclino.com/VIAResearch/General/VIA-Newcomer-101-e357fe23-4d43-48fd-a103-2ddee07cd187)
+---
 
-## Description
-##### 1. File named top.cc has main function for this simulator.
-##### 2. All header files for dlsim and scnn are separtely placed in directory named include/dlsim and include/scnn.
-##### 3. All source files for dlsim and scnn are separtely placed in directory named src/dlsim and src/scnn.
+## What is SCNN?
 
-## USEFUL TIPS
-##### 1. Always declare member functions for private values in any classes. (e.g. get_value, set_value...)
-##### 2. Functions whoese output type is bool must be named start with prefix "is_".
-##### 3. Use assert function AS MUCH AS POSSIBLE.
+> SCNN is a domain-specific architecture specialized for accelerating sparse convolutional neural networks (CNN) in machine learning. SCNN stores input activation layers and weights in sparse format in order to enhance performance and power consumption. For more information, please refer to the following [paper](https://arxiv.org/pdf/1708.04485.pdf) written by professor Minsoo Rhu, Angshuman Parashar and others.
 
-## Compile
+## What is a cycle-level simulator?
+> Cycle level simulators are simulators made from modern programming languages such as C/C++, instead of traditional RTL languages such as Verilog or SystemVerilog. While not as accurate as RTL simulators, cycle-level simulators provide fast & easily configurable simulations of a specific hardware architecture. This enables researchers to conduct experiments under various environments, making it more suitable for research purposes.
 
-##### Use given makefile for compilation. 
+## About this project
+> This project holds an implmentation of a cycle-level simulator for the SCNN architecture, developed during my individual research program at [VIA LAB](https://sites.google.com/view/kaist-via/home). This simulator can run simulation experiments under various hardware configurations.
 
-## Author
+## Installation
+```
+git clone https://github.com/losif63/SCNN_Simulator_101
+```
 
-👨🏻‍🤝‍👨🏻 **Ranggi Hwang & Jinha Chung** from VIA lab
+## Compilation & Running experiments
+To create a binary executable file, simply type:
+```
+make
+```
+This command will create a binary exeucable file named `SCNN`. To run an experiment, simply type:
+```
+./SCNN {configuration_file_path}
+```
+For example, to run an experiment on VGGNet and store the result to a file:
+```
+./SCNN config/vgg16/vgg16 > Results/vgg16/vgg16_results
+```
 
-* Website: https://sites.google.com/view/kaist-via/home?authuser=0
+You can also modify the provided `build.sh` shell script to automatically run experiments!
+```
+./build.sh
+```
 
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+## Testing
+This project provides test cases used during development in the `test/test.cc` file. One could possibly also use the provided test cases when modifying the source code. To run the test cases, simply type:
+```
+make test
+```
 
-## 🤝 Contributing
+## Clearing repository
+When clearing the repository, one can simply remove all compiled object code simply by:
+```
+make clean
+```
+Note that switching between input halo & output halo will require recompilation of all source files and it is mandatory to use the above command before doing so.
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://sites.google.com/view/kaist-via/home?authuser=0). You can also take a look at the [contributing guide](https://github.com/kefranabg/readme-md-generator/blob/master/CONTRIBUTING.md).
+## Default configuration
+* PE array: 8 x 8
+* Multiplier array: 4 x 4
+* Halo: Output halo
+* Queue depth: 8
+* Accumulator bank number: 2 x F x I
+
+
